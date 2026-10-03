@@ -1,0 +1,27 @@
+@font-face
+{
+  font-family: "MainDOS";
+  src: url("/Ac437_IBM_VGA_9x16.ttf") format("truetype");
+}
+
+body
+{
+  background-color: #000000;
+  color: #ff007f;
+  font-family: "MainDOS", monospace;
+}
+
+textarea
+{
+  font-family: monospace;
+}
+
+a:link
+{
+  color: #3f3fff;
+}
+
+a:visited
+{
+  color: #ff7faf;
+}

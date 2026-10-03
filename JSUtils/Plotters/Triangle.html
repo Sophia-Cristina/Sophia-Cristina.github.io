@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle plotter</title>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+    <h1>~*~ TRIANGLE PLOTTER ~*~</h1>
+    Two classes, one class the mathematical definition fo a triangle itself. Set 'a' and 'b' sides and 'gamma' angle (the one between 'a' and 'b').<br>
+    The constructor automatically calculates all proprieties of the triangle.<br><br>
+    Then it have a triangle plotter class, which is self-explanatory.<br>
+    You can use 'bool' variables ('checkbox' in this user interface) to define what propriety of the triangle will be draw, and if there will have text info about it.<br>
+    If you set a scale based on your "pixels per cm", which you can calibrate in this page: <a href="/JSUtils/Tools/RulersAndGraphPapers">HERE</a>; then you can overlay a paper over the screen to have an accurate enough physical drawing.<br><br>
+    <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+    <b>INPUTS:</b>
+    <details>
+      // If you don't change color, it uses my LRGB function (Linear RGB by hue), which is the standard in all pages i made that can draw.<br>
+      // Brackground color is transparent, so, copy and paste the image over the background you want. It is not hard to write a code for it, but i'm lazy now (because there is lot of stuff i need to translate), maybe later.<br>
+      // If you print screen, then you can use inverted colors if you want a white background.<br><br>
+      <summary>-&gt; CLICK TO CHANGE COLOR &lt;-</summary>
+      <pre>
+      <label>USE COLORS: <input type="checkbox" id="Check_LRGB"></label> // It will use my Linear RGB function (hue)
+      <label>CHANGE SIDES COLOR: <input type="checkbox" id="Check_ChangeSidesColor"> // Each side have a different color</label><br>
+      SIDES:<br>
+      <label>R:<input type="number" id="color_side_r" value="255" min="0" max="255" step="1"></label>
+      <label>G:<input type="number" id="color_side_g" value="0" min="0" max="255" step="1"></label>
+      <label>B:<input type="number" id="color_side_b" value="127" min="0" max="255" step="1"></label><br><br>
+      HEIGHT:<br>
+      <label>R:<input type="number" id="color_height_r" value="127" min="0" max="255" step="1"></label>
+      <label>G:<input type="number" id="color_height_g" value="127" min="0" max="255" step="1"></label>
+      <label>B:<input type="number" id="color_height_b" value="127" min="0" max="255" step="1"></label><br><br>
+      BISECTORS:<br>
+      <label>R:<input type="number" id="color_bis_r" value="127" min="0" max="255" step="1"></label>
+      <label>G:<input type="number" id="color_bis_g" value="127" min="0" max="255" step="1"></label>
+      <label>B:<input type="number" id="color_bis_b" value="255" min="0" max="255" step="1"></label><br><br>
+      INCIRCLE:<br>
+      <label>R:<input type="number" id="color_incirc_r" value="255" min="0" max="255" step="1"></label>
+      <label>G:<input type="number" id="color_incirc_g" value="255" min="0" max="255" step="1"></label>
+      <label>B:<input type="number" id="color_incirc_b" value="255" min="0" max="255" step="1"></label><br><br>
+      </pre>
+    </details>
+    <br>
+    * MATH:<br>
+    <label>SIDE A: <input type="number" id="side_a_in" value="30"></label>
+    <label>SIDE B: <input type="number" id="side_b_in" value="15"></label>
+    <label>GAMMA (DEGREES): <input type="number" id="sides_deg_in" value="90"> // It is converted to radians inside the function</label><br>
+    // * NOTE: <i>Above 90 degrees, the image clips the triangle, this is not how it works in C++. I may fix this eventually</i>.<br><br>
+    // !!! CAREFUL: Triangle side size is by pixels, the plotted side size is "side_size * scale".<br>
+    This can easily lead to a very big image and may crash your browser, especially if you forget to change after changing triangle sides.<br>
+    <label>SCALE: <input type="number" id="scale_in" value="33.4"></label><br>
+    * PLOTTER:<br>
+     <!-- // ####### FLAGS #######
+    /* Flags:
+        128 = Add vertex to incircle
+         64 = Add text to bisectors
+         32 = Add vertex to perimeter
+         16 = Trigonometric functions
+          8 = Midpoints
+          4 = Incircle
+          2 = Bisectors
+          1 = Perimeter*/ -->
+    &nbsp;* * Drawings:
+    <label>PERIMETER: <input type="checkbox" id="Check_Perimeter"> </label>
+    <label>BISECTOR: <input type="checkbox" id="Check_Bisector"> </label>
+    <label>INCIRCLE: <input type="checkbox" id="Check_Incircle"> </label>
+    <br>
+    &nbsp;* * Items:
+    <label>INCIRCLE VERTEX: <input type="checkbox" id="Check_Incircle_v"> </label> | 
+    <label>PERIMETER VERTEX: <input type="checkbox" id="Check_Perimeter_v"> </label> | 
+    <label>MIDPOINTS VERTEX: <input type="checkbox" id="Check_Midpoints_v"> </label> | 
+    <label>BISECTOR INFO: <input type="checkbox" id="Check_Bisector_t"> </label> | 
+    <label>TRIGONOMETRIC INFO: <input type="checkbox" id="Check_TrigInfo"> </label> |
+    <label>TRIANGLE INFO: <input type="checkbox" id="Check_TriInfo"> </label><br><br><br>
+    <code>
+    &nbsp;&nbsp;~*~&nbsp; -~-_-~-_-~-_-~`°ºoO0Ooº°'~-_-~-_-~-_-~-&nbsp; ~*~<br>
+    ~*~ ~*~ ~*~ -_-_-~-~`-&gt; <button id="TriPrintButton">DO IT!</button> &lt;-'~-~-_-_- ~*~ ~*~ ~*~<br>
+    &nbsp;&nbsp;~*~&nbsp; -_-~-_-~-_-~-_0Ooº°'`°ºoO0~-~-_-~-_-~-_-&nbsp; ~*~<br>
+    </code>
+    <br><br>
+    <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+    <b>TRIANGLE INFO:</b><br>
+    <span id="TriInfoSpan">...</span>
+    <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+    <b>TRIANGLE PLOT:</b><br>
+    |<canvas id="TriPlot" width="400" height="400"></canvas>|<br>
+    <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+    
+    
+    <script type="module">
+    import { ysxTRI_Triangle } from "/JSHeaders/ysxMath/Geo/ysxTri.js";
+    import { ysxDRAW_Tri } from "/JSHeaders/ysxGraph/Canvas/Plotter/ysxGeoPlot.js";
+
+
+    // ####### READ RGB:
+    function GetRGB(Prefix) { return([Number(document.getElementById(Prefix + "_r").value), Number(document.getElementById(Prefix + "_g").value), Number(document.getElementById(Prefix + "_b").value)]); }
+
+
+    // #################################################
+    // ####### MAIN #######
+    // #################################################
+
+    function DrawTriangle()
+    {
+        // INPUTS:
+        const SideA = Number(document.getElementById("side_a_in").value);
+        const SideB = Number(document.getElementById("side_b_in").value);
+        const Gamma = Number(document.getElementById("sides_deg_in").value) * Math.PI / 180.0; // Radians
+        const Scale = Number(document.getElementById("scale_in").value);
+
+        // COLORS
+        const UseColor = document.getElementById("Check_LRGB").checked;
+        let SideColor;
+        if (UseColor) { SideColor = GetRGB("color_side"); } else { SideColor = null; }
+        const HeightColor = GetRGB("color_height");
+        const BisColor = GetRGB("color_bis");
+        const IncircColor = GetRGB("color_incirc");
+        const ChangeSidesColor = document.getElementById("Check_ChangeSidesColor").checked;
+
+        // FLAGS:
+        let Flags = 0;
+        if (document.getElementById("Check_Perimeter").checked) { Flags |= 1; }
+        if (document.getElementById("Check_Bisector").checked) { Flags |= 2; }
+        if (document.getElementById("Check_Incircle").checked) { Flags |= 4; }
+        if (document.getElementById("Check_Midpoints_v").checked) { Flags |= 8; }
+        if (document.getElementById("Check_TrigInfo").checked) { Flags |= 16; }
+        if (document.getElementById("Check_Perimeter_v").checked) { Flags |= 32; }
+        if (document.getElementById("Check_Bisector_t").checked) { Flags |= 64; }
+        if (document.getElementById("Check_Incircle_v").checked) { Flags |= 128; }
+
+        // TRIANGLE:
+        const Triangle = new ysxTRI_Triangle(SideA, SideB, Gamma);
+        document.getElementById("TriInfoSpan").innerHTML = Triangle.CoutInfo();
+
+        // TRIANGLE PLOTTER:
+        const Border = 24;
+        const Plot = new ysxDRAW_Tri(Triangle, Scale, Border, SideColor);
+        Plot.LRGB = UseColor;
+        Plot.ColorBisectors = BisColor;
+        Plot.ColorHeightLine = HeightColor;
+        Plot.ColorIncircle = IncircColor;
+        Plot.TriPrintByFlags(document.getElementById("Check_TriInfo").checked, ChangeSidesColor, Flags);
+
+
+        // CANVAS:
+        const Canvas = document.getElementById("TriPlot");
+        Canvas.width = Plot.TriOut.width;
+        Canvas.height = Plot.TriOut.height;
+        const Context = Canvas.getContext("2d");
+        Context.clearRect(0, 0, Canvas.width, Canvas.height);
+        Context.drawImage(Plot.TriOut, 0, 0);
+    }
+
+
+    // ####### BUTTON #######
+    document.getElementById("TriPrintButton").addEventListener("click", DrawTriangle);
+</script>
+  </body>
+</html>

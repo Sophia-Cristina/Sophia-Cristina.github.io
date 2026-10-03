@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Utils</title>
+    <style>
+    </style>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  <h1>~*~ JAVASCRIPT UTILS ~*~</h1>
+  <p>
+  JSUtils is a collection of small JavaScript utilities built on top of <b>JSHeaders</b>. These include calculators, plotters, mathematical tools, logic tools, and other simple interactive programs that may be useful for practical purposes.<br>
+  The utilities here are designed to work in two ways: they can be used directly as small programs, and they can be imported and reused by larger applications. <b>Smallapps</b> that may be imported for <a href="https://en.wikipedia.org/wiki/Modularity">modularity</a>, <b>BiggerApps</b> that may compose multiples <b>SmallApps</b>, <b>StudyApps</b>, and [other projects] can build upon the tools provided here instead of implementing the same functionality again. That also means that if you get the source-code of this page, you can basically use it in a kind of an API.<br>
+  Because of this, JSUtils is also part of the programming structure of this website. JSHeaders provide the lower-level classes and functions, JSUtils combines them into useful tools, and higher-level applications can combine those tools into more complex software.<br><br>
+  Most of the projects listed here are translations of C++ and Ruby programs that I have already made. I list them even when their JavaScript versions are not finished yet. If an item does not have a link, it simply means that I have not translated it to JavaScript yet.<br><br>
+  The programs on this page are primarily intended to be interactive tools rather than educational material. For programs specifically designed to teach or demonstrate concepts from a particular field, see the corresponding <b>StudyApps</b> page. For example, a simple CPU emulator may exist in JSUtils as an interactive tool, while a CPU simulator specifically designed to teach Computer Science concepts would belong in <b>StudyApps → Computer Science</b>.<br><br>
+  The source code is also part of the purpose of this page. These are relatively small programs intended to be inspected, reused, and learned from. Most browsers allow you to inspect the source code by right-clicking the page and selecting <b>"View Page Source"</b>.<br>
+  In short, <b>JSUtils is the utility layer of the website</b>: small programs built from JSHeaders that can be used independently or become building blocks for larger applications.<br><br>
+  </p><br>
+  
+  <details>
+    <summary>-&gt; CLICK TO SEE ACTUAL FILES IN 'JSHeaders' DIRECTORY &lt;-</summary>
+      // This is not all headers i'm translating or making for this website, only the ones i have already done!<br><br>
+    
+      <ul>
+        <li>ysxGraph</li>
+        <ul>
+          <li>Canvas</li>
+          <ul>
+            <li>Plotter</li>
+            <ul>
+              <li>ysxDraw.js</li>
+              <li>ysxGeoPlot.js</li>
+              <li>ysxPlotters.js</li>
+              <li>ysxPlotterUtils.js</li>
+            </ul>
+            <li>ysxCanv.js</li>
+            <li>ysxCanvUtils.js</li>
+          </ul>
+          <li>ysxColor.js</li>
+          <li>ysxGraphs.js</li>
+        </ul>
+      </ul>
+      
+      <ul>
+        <li>ysxMath</li>
+        <ul>
+          <li>Geo</li>
+          <ul>
+            <li>ysxAngle.js</li>
+            <li>ysxGeo.js</li>
+            <li>ysxTri.js</li>
+          </ul>
+          <li>Physics</li>
+        </ul>
+        <li>ysxArith.js</li>
+        <li>ysxConst.js</li>
+        <li>ysxMath.js</li>
+      </ul>
+  </details>  
+  <br><br>
+  
+  <h2>####### LIST OF CONTENT #######</h2>
+  <br>
+  <b>### ALGORITHMS ###</b><br>
+  <ul>
+    <li>Random utils;</li>
+  </ul>
+  <br>
+  <b>### CALCS ###</b><br>
+  * NOTE: There is no Polynominal calcs because the Polynominal Plotter is also a calculator.<br>
+  <ul>
+    <li>Arithmetic calcs; // GCD, Factorial, factors, averages, sequences and etc</li>
+    <li>Calculus:
+     <ul>
+      <li>Derivative / Differential;</li>
+      <li>Integrals;</li>
+     </ul>
+    </li>
+    <li>Converters; // Single value, multiple calculations</li>
+    <li>Electronics;</li>
+    <li>Euclidean Vector tools;</li>
+    <li>Finances:
+     <ul>
+      <li>APR / APY;</li>
+      <li>Profit (by margin, size, target, multiplier and etc);</li>
+      <li>Misc tools;</li>
+     </ul>
+    </li>
+    <li>Music:
+     <ul>
+      <li>Timing divisions (BPM and ms);</li>
+      <li>MTOF / FTOM;</li>
+      <li>Samples;</li>
+     </ul>
+    </li>
+    <li>Numbers;</li>
+    <li>Physics;</li>
+    <li>Probability:
+     <ul>
+      <li>;</li>
+     </ul>
+    </li>
+    <li>Signal Processing tools;</li>
+    <li>Time / Clock;</li>
+    <li>Transform:
+     <ul>
+      <li>FFT table;</li>
+     </ul>
+    </li>
+  </ul>
+  <br>
+  <b>### EMULATION ###</b><br>
+  <b>ICs:</b><br>
+  <ul>
+    <li>Small devices (ex.: ICs for logic gates):</li>
+    <li>CPUs (also, logic used in CPUs, like ALUs):
+    <ul>
+     <li>Intel 4004;</li>
+    </ul>
+    </li>
+    <li>Microcontrollers:</li>
+    <li>RAMs:</li>
+    <li>ROMs:</li>
+  </ul>
+  <b>Game consoles:</b><br>
+  <ul>
+    <li>Atari 2600:
+    <ul>
+     <li><a href="/JSUtils/Emulation/Atari2k6/Atari2k6HueColorCalc">Linear RGB Hue Calculator (NTSC)</a>;</li>
+    </ul>
+    </li>
+    <li>NES;</li>
+    <li>Sega Genesis / Mega-Drive;</li>
+    <li>SNES;</li>
+  </ul>
+  <br>
+  <b>### ENCODING / CRYPTOGRAPHY ###</b><br>
+  <ul>
+    <li>Base_n;</li>
+    <li>QR Code generator;</li>
+    <li>SHA with HMAC; // !!! WARNING: for study and tests only, i'm not good with opsec and i can't be sure of how safe is to use the outputs from this program !!!</li>
+  </ul>
+  <br>
+  <b>### FILES ###</b><br>
+  <ul>
+    <li>WAV file:
+    <ul>
+     <li>Generate a '.wav' file using any data (binary);</li>
+    </ul>
+    </li>
+  </ul>
+  <br>
+  <b>### GRAPHS ###</b><br>
+  <ul>
+    <li>Tools for colors;</li>
+  </ul>
+  <br>
+   <b>### HTML TEMPLATES ###</b><br>
+  <ul>
+    <li><a href="/JSUtils/HTMLTemplates/Inputs">Inputs</a>;</li>
+  </ul>
+  <br>
+  <b>### MEASURES ###</b><br>
+  <ul>
+    <li>Single input, multiple converters;</li>
+  </ul>
+  <br>
+  <b>### PLOTTERS ###</b><br>
+  * NOTE: I'm a single busy person, i can't make a full blow graph calc, there is free graph calcs available online anyway.
+  <ul>
+    <li>Complex;</li>
+    <li>Fractals;</li>
+    <li>Geometry:
+     <ul>
+      <li>Circle;</li>
+      <li><a href="/JSUtils/Plotters/Triangle">Triangle</a>; // Also a calculator</li>
+     </ul>
+    </li>
+    <li>Integrals;</li>
+    <li>Polar;</li>
+    <li>Polynomials (with options to different degrees);</li>
+    <li>Trigonometry;</li>
+  </ul>
+  <br>
+  <b>### TABLES ###</b><br>
+  * Table of values for general use. For example, look-up table generator;<br>
+  <ul>
+    <li>Trigonometry tables;</li>
+  </ul>
+  <br>
+  <b>### TOOLS ###</b><br>
+  <ul>
+    <li><a href="/JSUtils/Tools/RulersAndGraphPapers">Rulers and graph papers</a>; // Use a scale number to turn your computer screen to a very accurate ruler</li>
+  </ul>
+  <br>
+  <h2>####### SPECIAL #######</h2>
+  * Things for personal projects, theories, concepts, proof of concept and etc...<br>
+  * Some texts i write may proclaim a mathemarical model, algorithm or requires computational power. Things in this list may be part of such texts. You can find my texts here:<br>
+  * * <a href="/personallinks">Personal Links</a>;<br>
+  <ul>
+    <li>Introduction and Proof-of-Concept to Decentralized Engines for Blockchains;</li>
+    <li>Market Geometry Theory;</li>
+  </ul>  
+  <br><br><br><br><br><br><br>
+  </body>
+</html>

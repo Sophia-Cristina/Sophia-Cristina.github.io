@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Tree</title>
+    <style>
+      body
+      {
+        background-color: #000000;
+        color: #3030FF
+      }
+      textarea
+      {
+        font-family:monospace;
+      }
+    a:link { color: #00ffff; }
+    a:visited { color: #ff007f; }
+    </style>
+    <!--<link href="/style.css" rel="stylesheet" type="text/css" media="all">-->
+  </head>
+  <body>
+  <!-- ####### INPUTS ####### -->
+<section>
+<!-- ### PHASOR -->
+I WILL DRAW YOU A TREE!<br>
+ENTER AN ANGLE IN RADIANS:<br>
+<p>Rads:</p><br>
+<input
+type = "range"
+min = "0" max = "3141593"
+value = "1570796" style = "width: 75%;"
+class = "slider" id = "RadsIn">
+<span id="RadsSpan"> Rads</span><br />
+</section>
+<!-- ~*~ ~*~ ~*~ -->
+
+<!-- ####### ####### ######## MAIN ####### ####### ######## -->
+<h1 class = "title">Fractal tree i got from "Coding Train".</h1>
+<a href="https://github.com/CodingTrain/Nebula-AppleSoft-Basic/blob/main/tree/tree.a">GitHub/CodingTrain</a>.<br><br>
+<!--
+style="color:rgb(255, 99, 71);"></h1>
+style="color:#ff6347;"></h1>
+style="background-color:hsl(9, 100%, 64%);"></h1>
+-->
+
+<p>CANVAS:<br></p>
+<!-- Canvas -->
+<canvas id="Canvas1" width = "384" height = "384"></canvas>
+<!-- ~*~ ~*~ ~*~ -->
+
+<!-- ####### #######  END MAIN  ####### ######## -->
+<!-- SCRIPTS -->
+<script>
+// JS STUFFS:  
+var Canvas = document.getElementById("Canvas1");
+var ctx = Canvas.getContext("2d");
+var cy = Canvas.height, cx = Canvas.width;
+  
+var RadsIn = document.getElementById("RadsIn");
+var RadsSpan = document.getElementById("RadsSpan");
+var Rads = RadsIn.value / 1000000.0;
+RadsSpan.innerHTML = RadsIn.value / 1000000.0;
+RadsIn.oninput = function()
+{
+	INIT(); // Remove if that is giving you problems
+  Rads = RadsIn.value / 1000000.0;
+  RadsSpan.innerHTML = Rads  + ": Radians.";
+}
+  
+/*CODING TRAIN FRACTAL TREE (BASIC):
+https://github.com/CodingTrain/Nebula-AppleSoft-Basic/blob/main/tree/tree.a
+*/
+
+/*60 REM HIGH RESOLUTION GRAPHICS
+70 HGR
+80 HCOLOR = 3*/
+
+// ####### 90 REM INITIAL VARIABLES:
+
+var SHRINK = 0.67;
+var A = 3.14159 * 0.5;
+var L = 50;
+var LEVEL = 0;
+const MAXLEV = 10;
+var X = Canvas.width * 0.5, Y = Canvas.height;
+var DA = Rads;
+var DX = 0, DY = 0;
+var NX = 0, NY = 0;
+  
+function INIT()
+{
+  SHRINK = 0.67;
+	A = 3.14159 * 0.5;
+	L = 112;
+	LEVEL = 0;
+	X = Canvas.width * 0.5; Y = Canvas.height * 0.9;
+	DA = Rads;
+	DX = 0; DY = 0;
+	NX = 0; NY = 0;
+  ctx.fillStyle = 'rgb(63, 0, 31)';
+  ctx.fillRect(0, 0, Canvas.height, Canvas.width);
+  REM_CALCULATE_NEXT_POINT();
+}
+
+//160 REM ARRAY FOR STACK OF TREE POSITIONS
+//170 DIM XS(MAXLEV) : DIM YS(MAXLEV)
+var XS = new Array(MAXLEV);
+var YS = new Array(MAXLEV);
+
+//1000 REM DRAW A SINGLE BRANCH!
+function REM_CALCULATE_NEXT_POINT()
+{
+    //1010 REM CALCULATE NEXT POINT
+    DX = L * Math.cos(A);
+    DY = L * Math.sin(A);
+    NX = X + DX; NY = Y - DY;
+    
+    //1050 REM DRAW BRANCH
+    //cout << "1060 HPLOT " << X << ", " << Y << " TO " << NX << ", " << NY << '\n';
+    //ctx.lineWidth = 1+i;
+    ctx.fillStyle = 'rgb(0, 0, 255)';
+    ctx.beginPath();
+    ctx.moveTo(X,Y);
+    ctx.lineTo(NX,NY);
+    ctx.stroke();
+    //1070 REM SAVE POSITION
+    XS[LEVEL] = X; YS[LEVEL] = Y;
+    //1090 REM NEXT BRANCH
+    X = NX; Y = NY;
+    LEVEL = LEVEL + 1;
+    A = A + DA;
+    L = L * SHRINK;
+    if (LEVEL < MAXLEV) { REM_CALCULATE_NEXT_POINT(); } // THEN GOSUB 1000
+    //1150 REM AND ANOTHER BRANCH
+    A = A - DA * 2;
+    if (LEVEL < MAXLEV) { REM_CALCULATE_NEXT_POINT(); }
+    //1180 REM POP BACK
+    A = A + DA;
+    L = L / SHRINK;
+    LEVEL = LEVEL - 1;
+    X = XS[LEVEL]; Y = YS[LEVEL];
+    //1230 RETURN
+}
+</script>
+<!-- ~*~ ~*~ ~*~ -->
+
+
+  </body>
+</html>

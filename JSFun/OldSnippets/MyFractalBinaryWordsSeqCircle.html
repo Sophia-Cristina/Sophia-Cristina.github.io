@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Binary Words Circle Fractal</title>
+    <style></style>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  <h1>~*~ MY BINARY WORDS CIRCLE FRACTAL ~*~</h1>
+  This fractal is based on a system I devised in which new binary digits are appended to what I call "words", generating every possible combination of <code>0</code> and <code>1</code> for each iteration.<br><br>
+
+  For example:<br>
+  Iteration 1 = { 0, 1 }<br>
+  Iteration 2 = { 0, 1, 00, 01, 10, 11 }<br>
+  Iteration 3 = { 0, 1, 00, 01, 10, 11, 000, 001, 010, 011, 100, 101, 110, 111 }<br><br>
+
+  The words belonging to each iteration are then assigned positions around a circle according to a score function. The score is calculated from the binary structure of each word, with the current system giving greater weight to the "up" and "right" directions. The words of each individual iteration are therefore ordered according to their scores and distributed around the circle.<br><br>
+
+  This produces an infinite sequence of binary words in which words with related structures can occupy relatively close positions. For example, <code>111</code> tends to be positioned near <code>1111</code>, which in turn tends to be positioned near <code>11111</code>.<br><br>
+
+  The original idea, however, did not begin as a fractal. I originally developed the underlying logical system for representing concepts from a single source through symmetrical and progressively subdivided directions. For example:<br>
+  <code>Night and Day → Night, Midnight, Day, Noon → ...</code><br><br>
+
+  Turning this system into a fractal was a recreational mathematical application that I later discovered could be constructed from the same principles.<br><br>
+
+  The particular score function used here is based on a conventional spatial interpretation in which "above" represents something higher and "below" something lower, while "left" represents going backward and "right" represents going forward. This is why the current score function gives different weights to the vertical and horizontal components. This is only one possible definition, however. The fractal can be constructed with other score functions as long as the function provides a unique, ordered position for each word.<br><br>
+  A mere sum of 'sin' and 'cos' would lead to:<br>
+  &nbsp;* Two points with value '1': sine(pi*0.5) and cos(0); and two with value '-1': cos(pi) and sin(pi*1.5);<br>
+  &nbsp;* Two points with value '0', at sides symetric to 'pi*3/4'.;<br>
+  So the mathematical idea that inspired the fractal is: finding a way to create an order from values that can cancel each other.<br>
+  There is more issues related to symmetry. and so i used this score system as one of the possible ways to map each point in a circle.<br>
+  One can use other functions and score systems to create different colors for the fractal.<br><br>
+
+  <h2>Notes:</h2>
+  * In few iterations it can become heavy to render, not because the math, which is super simple, but, because each circle is painted as a new 'image data' and you need a canvas of a very big area to be able to see each cell.<br>
+  &nbsp;* At 'Iteration = 16' and 3400^2 area, 16-cores took about 15 seconds to render. On older computers, it may push the RAM a bit.<br>
+  &nbsp;* 'Iteration = 7' and area 1142^2 and 'Iteration = 8' and 2416^2 area, seems to be correctly filled and with correct colors.<br>
+  &nbsp;&nbsp;* This a sample for reference for you to be aware of how much the canvas size increase per iteration.<br>
+  * If the image size is too small, the flood-fill operation may fail to fill a cell correctly or may fill an adjacent cell. Increasing the image size gives the cells more space and reduces this problem.<br>
+  * To avoid discrepancies between the image size and the circle radius, use <code>r = size * 0.5 - 1</code>. You should not worry about this in this page, since it is done automatically, but you should take that in mind if you end up copying this code.<br><br><br>
+
+  <details>
+  <summary>~*~ ~*~ ~*~ ~~~~`-&gt; CLICK TO SEE THE C++ VERSION &lt;-'~~~~ ~*~ ~*~ ~*~</summary>
+  <pre>
+  <code class="language-cpp">
+#include &lt;uint8_t&gt;
+#include &lt;uint8_t&gt;
+
+// These headers are headers i made which you can find here:
+// <a href="https://github.com/Sophia-Cristina/My-Noob-Headers/tree/master">My Nood Headers</a>
+#include "ysxLibsUtils/CImg/ysxCImg.h" // "ysxMath.h" inside
+#include "ysxComputer/Algorithms/ysxAlgos.h"
+
+// #################################################
+
+using namespace std;
+
+// #################################################
+
+
+// HIGHER THE SCORE, HIGHER THE VALUE FOR A BINARY WORD:
+// * Vertical axis is stronger than horizontal axis;
+// * More to the top and more to the right = more score;
+double BinaryWordsCircleScore(double rad)
+{
+	double Score = 0;
+	const double Norm = sin(PI * 0.25) * 1.5 + cos(PI * 0.25) * 0.625; // = 1.50260191
+	const double Sin = sin(rad), Cos = cos(rad);
+	Score += Sin; Score += Cos * 0.5; 
+	if (Sin &gt; 0) { Score += 0.5 * Sin; } if (Cos &gt; 0) { Score += 0.125 * Cos; } // "Up" and "Right" give higher score
+	Score /= Norm;
+	return (Score);
+}
+
+
+CImg&lt;uint8_t&gt; PrintBinaryWordCircle(uint16_t Size, int r, int Iter, bool RandomColor, bool LRGB, Point3D&lt;uint8_t&gt; RGB)
+{
+	CImg&lt;uint8_t&gt; MainImg(Size, Size, 1, 3, 0), CircI;
+	uint32_t Mid = floor(Size * 0.5);
+	double Div, SubDiv, rad, Line, rRatio = 1.0 * r / Size;
+	std::vector&lt;uint8_t&gt; BinWords = ysxFRACTAL_BinaryWordsSeq(Iter);
+	std::vector&lt;uint8_t&gt; BinArea = ysxFRACTAL_BinaryWordSeqArea(Iter);
+	for (size_t n = BinArea.size() - 1; n &gt; 0; --n) { BinArea[n] -= BinArea[n - 1]; }
+	Point3D&lt;uint8_t&gt; nRGB = RGB;
+
+	uint32_t cSize = 0, MidS, cr, s, s2, Count = 0;
+	uint32_t Wordset, WordSize;
+
+	for (uint32_t c = Iter; c &gt; 0; --c)
+	{
+		cSize = (Size / Iter) * c;
+		MidS = cSize * 0.5; cr = rRatio * cSize; s = BinArea[c - 1]; s2 = pow(2, c);
+		CircI = CImg&lt;uint8_t&gt;::CImg(cSize, cSize, 1, 3, 127);
+		uint8_t cclr[] = { RGB.x * 0.67, RGB.y * 0.67, RGB.z * 0.67 };
+		CircI.draw_circle(MidS, MidS, cr, cclr, 1, 1);
+
+		cclr[0] = RGB.z; cclr[1] = RGB.y; cclr[2] = RGB.x;
+ 		if (c &gt; 1) { ysxCIMG_DRAW_RadiusPolygon(CircI, cr, MidS, MidS, 0, s, 0, 1, cclr); }
+		cclr[0] = RGB.y; cclr[1] = RGB.z; cclr[2] = RGB.x;
+		ysxCIMG_DRAW_RadiusPolygon(CircI, cr, MidS, MidS, 0, s2, 0, 1, cclr);
+
+		Div = TAU / s2;
+		rad = 0; std::vector&lt;Point&lt;double&gt;&gt; Scores;
+		for (uint32_t n = 0; n &lt; s2; ++n) { Scores.push_back({ rad, BinaryWordsCircleScore(rad) }); rad += Div; }
+		if (!Scores.empty()) { ysxSORT_QuickSortPty(Scores, 0, Scores.size() - 1); }
+
+		Wordset = ysxARITH_SumntoPowIniEnd(2, 1, c - 1);
+		for (uint32_t Word = Wordset; Word &lt; Wordset + s2; ++Word)
+		{
+			size_t WordSize = BinWords[Word].size();
+			if (RandomColor) { RGB.x = rand() % 256; RGB.y = rand() % 256; RGB.z = rand() % 256; }
+			for (int Char = 0; Char &lt; WordSize; ++Char)
+			if (LRGB)
+			{
+				Line = 1.0 * (Word - Wordset) / s2;
+				if (BinWords[Word][0] == '0') { ysxCOLOR_LinearRGB(0.5 + Line, 1, 1, (uint8_t*)&RGB); }
+				else { ysxCOLOR_LinearRGB(Line, 1, 1, (uint8_t*)&RGB); }
+			}
+			WordSize = BinWords[Word].size();
+			for (uint32_t Char = 0; Char &lt; WordSize; ++Char)
+			{
+				nRGB = RGB;
+				if (BinWords[Word][WordSize - 1 - Char] == '0')
+				{
+					nRGB.x = 255 - nRGB.x; nRGB.y = 255 - nRGB.y; nRGB.z = 255 - nRGB.z;
+				}
+				SubDiv = Div / WordSize;
+				rad = Scores[Word - Wordset].x - (SubDiv * (WordSize - 1)) + (SubDiv * Char);
+				rad -= (TAU / s) * 0.5;
+				rad = TAU - rad;
+				if (c &gt; 1) { ysxCIMG_DRAW_FillFlood(CircI, MidS + cos(rad) * cr * 0.85, MidS + sin(rad) * cr * 0.85, (uint8_t*)&nRGB); }
+				else { ysxCIMG_DRAW_FillFlood(CircI, MidS, MidS + sin(rad + PI) * cr * 0.75, (uint8_t*)&nRGB); }
+				//if (c &gt; 1) { ysxCIMG_DRAW_Circle(CircI, 3, MidS + cos(rad) * cr * 0.85, MidS + sin(rad) * cr * 0.85); }
+				//else { ysxCIMG_DRAW_Circle(CircI, 3, MidS, MidS + sin(rad + PI) * cr * 0.75); }
+				//AddText(CircI, MidS + cos(rad) * cr * 0.90, MidS + sin(rad) * cr * 0.90, std::to_string(BinWords[Word][Char]) + "\n" + BinWords[Word], 255, 0, 0);
+			}
+		}
+		uint8_t IgnoreColor[] = { 127, 127, 127 };
+		MainImg = ysxCIMG_DrawImageIgnClr(MainImg, CircI, Mid - MidS, Mid - MidS, IgnoreColor);
+	}
+	return (MainImg);
+}
+
+
+// #################################################
+
+// ######################################################################
+// ####### MAIN ########################################################
+// ######################################################################
+
+// #################################################
+int main()
+{
+	// #################################################
+	int Sys = 1;
+
+	while (Sys != 0)
+	{
+		cout &lt;&lt; "####### BINARY WORD CIRCLE FRACTAL #######\n\n";
+
+		uint16_t Size, r, Iter;
+		bool RandomColor, LRGB, ChangeClr;
+		Point3D&lt;uint8_t&gt; RGB = { 255, 255, 255 };
+
+		cout &lt;&lt; "Size: "; cin &gt;&gt; Size;
+		cout &lt;&lt; "r: "; cin &gt;&gt; r;
+		cout &lt;&lt; "Iter: "; cin &gt;&gt; Iter;
+
+		cout &lt;&lt; "\nBOOLS:\n";
+		cout &lt;&lt; "RandomColor: "; cin &gt;&gt; RandomColor;
+		cout &lt;&lt; "LRGB (overwrite RandomColor): "; cin &gt;&gt; LRGB;
+		if (!RandomColor && !LRGB)
+		{
+			cout &lt;&lt; "Change Color?: "; cin &gt;&gt; ChangeClr;
+			if (ChangeClr)
+			{
+				uint16_t CR, CG, CB;
+				cout &lt;&lt; "R: "; cin &gt;&gt; CR;
+				cout &lt;&lt; "G: "; cin &gt;&gt; CG;
+				cout &lt;&lt; "B: "; cin &gt;&gt; CB;
+				RGB.x = CR; RGB.y = CG; RGB.z = CB;
+			}
+		}
+		CImg&lt;uint8_t&gt; I = PrintBinaryWordCircle(Size, r, Iter, RandomColor, LRGB, RGB);
+
+		cout &lt;&lt; "\n#######\nDONE\n#######\n\n";
+
+		I.save_bmp("BinaryWordsCircleFractal.bmp");
+
+		// Display:
+		CImgDisplay D(I, "Img:");
+		while (!D.is_closed()) { D.wait(); }
+		// #################################################
+		cout &lt;&lt; "\n#######\n\nEXIT = 0; "; cin &gt;&gt; Sys;
+	}
+	// #################################################
+
+	// #################################################
+	return (0);
+}  
+  </code>
+  </pre>
+</details>
+<br>
+
+  
+  <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+  
+  <label>Image Size: <input type="number" id="FracSize" value="2000"></label><br>
+  <label>Iterations:<br><input type="number" id="FracIter" min="1" value="4"></label><br>
+  <i>// !!! There is no 'max', don't be a retarded and explode your computer !!!</i><br><br>
+  <label>R: <input type="number" id="FracR" min="0" max="255" value="255"></label>
+  <label>G: <input type="number" id="FracG" min="0" max="255" value="255"></label>
+  <label>B: <input type="number" id="FracB" min="0" max="255" value="255"></label><br><br>
+  <label>Random Color: <input type="checkbox" id="RandClr"></label><br>
+  <label>Linear RGB (hue; overwrite 'Random Color'): <input type="checkbox" id="LRGB"></label> // Useful to identify how alike words from interactions divides<br>
+  <button id="FracPrint">DO IT!</button><br>
+  <i>* Don't worry if it takes a while for the image to appear! Keep an eye on the RAM tough!</i><br>
+
+  <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+  
+  <canvas id="FracCanvas" width="2000" height="2000"></canvas><br>
+  
+  <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+  
+  <script type="module">
+
+import { ysxARITH_SumntoPowIniEnd } from "/JSHeaders/ysxMath/ysxArith.js";
+import { ysxCOLOR_LinearRGB } from "/JSHeaders/ysxGraph/ysxColor.js";
+import { ysxDRAW_FillFloodImgDataAlphaWall } from "/JSHeaders/ysxGraph/Canvas/Plotter/ysxDraw.js";
+
+const TAU = Math.PI * 2;
+
+
+// #################################################
+// ####### BINARY WORDS:
+// #################################################
+
+function BinaryWordsSeq(iter)
+{
+    if (iter < 1) { return []; }
+
+    const words = ["0", "1"];
+    let wordsIndex = 0;
+    for (let wordSize = 1; wordSize < iter; ++wordSize)
+    {
+        const amount = 2 ** wordSize;
+        for (let n = 0; n < amount; ++n)
+        {
+            const word = words[wordsIndex++];
+            words.push(word + "0");
+            words.push(word + "1");
+        }
+    }
+    return(words);
+}
+
+
+// #################################################
+// ####### AREA:
+// #################################################
+
+function BinaryWordSeqArea(iter)
+{
+    if (iter < 1) { iter = 1; }
+
+    let sum = 0;
+    const areas = [];
+    for (let n = 1; n <= iter; ++n) { sum += n * (2 ** n); areas.push(sum); }
+
+    // Convert cumulative areas into individual areas:
+    for (let n = areas.length - 1; n > 0; --n) { areas[n] -= areas[n - 1]; }
+    return(areas);
+}
+
+
+// #################################################
+// ####### SCORE:
+// #################################################
+
+function BinaryWordsCircleScore(rad)
+{
+	let Score = 0;
+	const Norm = Math.sin(Math.PI * 0.25) * 1.5 + Math.cos(Math.PI * 0.25) * 0.625; // = 1.50260191
+	const Sin = Math.sin(rad);
+	const Cos = Math.cos(rad);
+	Score += Sin; Score += Cos * 0.5; 
+	if (Sin > 0) { Score += 0.5 * Sin; } if (Cos > 0) { Score += 0.125 * Cos; } // "Up" and "Right" gain higher score
+	Score /= Norm;
+	return (Score);
+}
+
+
+// #################################################
+// ####### RADIAL LINES:
+// #################################################
+
+function DrawRadialLines(context, radius, centerX, centerY, offset, divisions, color)
+{
+    const division = TAU / divisions;
+
+    context.beginPath();
+
+    for (let n = 0; n < divisions; ++n)
+    {
+        const rad = offset + n * division;
+        context.moveTo(centerX, centerY);
+        context.lineTo(centerX + Math.cos(rad) * radius, centerY + Math.sin(rad) * radius);
+    }
+    context.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+    context.lineWidth = 1;
+    context.stroke();
+}
+
+
+// MAIN FRACTAL:
+function PrintBinaryWordCircle(size, r, iter, randomColor, lrgb, RGB)
+{
+    // MAIN CANVAS:
+    const mainCanvas = document.createElement("canvas");
+    mainCanvas.width = size;
+    mainCanvas.height = size;
+    const mainCtx = mainCanvas.getContext("2d");
+    mainCtx.fillStyle = "rgb(0, 0, 0)";
+    mainCtx.fillRect(0, 0, size, size);
+
+    // BASIC VALUES:
+    const mid = size * 0.5;
+    const rRatio = r / size;
+
+    const binWords = BinaryWordsSeq(iter);
+    const binArea = BinaryWordSeqArea(iter);
+
+    let currentRGB = [...RGB];
+
+    for (let c = iter; c > 0; --c)
+    {
+        const cSize = Math.floor((size / iter) * c);
+        const midS = cSize * 0.5;
+        const cr = rRatio * cSize;
+        const s = binArea[c - 1];
+        const s2 = 2 ** c;
+
+        // INTERMEDIATE CANVAS:
+        const circCanvas = document.createElement("canvas");
+        circCanvas.width = cSize;
+        circCanvas.height = cSize;
+        const circCtx = circCanvas.getContext("2d");
+
+        // CIRCLES:
+        circCtx.beginPath();
+
+        circCtx.arc(midS, midS, cr, 0, TAU);
+        circCtx.strokeStyle = `rgb(${RGB[2] * 0.67}, ` + `${RGB[1] * 0.67}, ` + `${RGB[0] * 0.67})`;
+        circCtx.lineWidth = 1;
+        circCtx.stroke();
+
+        if (c > 1) { DrawRadialLines(circCtx, cr, midS, midS, 0, s, [RGB[2], RGB[1], RGB[0]]); }
+        DrawRadialLines(circCtx, cr, midS, midS, 0, s2, [RGB[1], RGB[2], RGB[0]]);
+
+        const imageData = circCtx.getImageData(0, 0, cSize, cSize);
+
+        // SCORES:
+        const div = TAU / s2;
+
+        const scores = [];
+        for (let n = 0; n < s2; ++n) { const rad = n * div; scores.push({ x: rad, y: BinaryWordsCircleScore(rad) }); }
+        scores.sort(function(a, b) { return(a.y - b.y); });
+
+        // WORD SET AND WORDS:
+        const wordset = ysxARITH_SumntoPowIniEnd(2, 1, c - 1);
+        for (let word = wordset; word < wordset + s2; ++word)
+        {
+            const binaryWord = binWords[word];
+            const wordSize = binaryWord.length;
+
+
+            // COLOR:
+            if (randomColor) { currentRGB[0] = Math.floor(Math.random() * 256); currentRGB[1] = Math.floor(Math.random() * 256); currentRGB[2] = Math.floor(Math.random() * 256); }
+
+            if (lrgb)
+            {
+              const line = (word - wordset) / s2; if (binaryWord[0] === "0") { ysxCOLOR_LinearRGB(0.5 + line, 1, 1, currentRGB); }
+              else { ysxCOLOR_LinearRGB(line, 1, 1, currentRGB); }
+            }
+
+            // CHARACTERS:
+            const subDiv = div / wordSize;
+
+            for (let charIndex = 0; charIndex < wordSize; ++charIndex)
+            {
+                // Copy the RGB values.
+                // We don't need to copy alpha because the flood fill always creates 'alpha = 255'.
+                let r = currentRGB[0];
+                let g = currentRGB[1];
+                let b = currentRGB[2];
+
+                if (binaryWord[wordSize - 1 - charIndex] === "0") { r = 255 - r; g = 255 - g; b = 255 - b; }
+
+                let rad = scores[word - wordset].x - subDiv * (wordSize - 1) + subDiv * charIndex;
+                rad -= (TAU / s) * 0.5; rad = TAU - rad;
+
+                // FLOOD FILL:
+                if (c > 1) {  ysxDRAW_FillFloodImgDataAlphaWall(imageData, cSize, cSize, midS + Math.cos(rad) * cr * 0.85, midS + Math.sin(rad) * cr * 0.85, [r, g, b]); }
+                else { ysxDRAW_FillFloodImgDataAlphaWall(imageData, cSize, cSize, midS, midS + Math.sin(rad + Math.PI) * cr * 0.75, [r, g, b]); }
+            }
+        }
+
+        circCtx.putImageData(imageData, 0, 0);
+        mainCtx.drawImage(circCanvas, mid - midS, mid - midS);
+    }
+
+    return mainCanvas;
+}
+
+
+// #################################################
+// ####### HTML INTERFACE:
+// #################################################
+
+document.getElementById("FracPrint")
+    .addEventListener
+    (
+        "click",
+        function()
+        {
+            const FracSize = Number(document.getElementById("FracSize").value);
+            const FracIter = Number(document.getElementById("FracIter").value);
+            const FracR = Number(document.getElementById("FracR").value);
+            const FracG = Number(document.getElementById("FracG").value);
+            const FracB = Number(document.getElementById("FracB").value);
+            const RandClr = document.getElementById("RandClr").checked;
+            const LRGB = document.getElementById("LRGB").checked;
+            const newCanvas = PrintBinaryWordCircle(FracSize, FracSize * 0.5 - 1, FracIter, RandClr, LRGB, [FracR, FracG, FracB]);
+
+            // Keep the identifier when replacing the canvas.
+            newCanvas.id = "FracCanvas";
+            document.getElementById("FracCanvas").replaceWith(newCanvas);
+        }
+    );
+</script>
+  </body>
+</html>

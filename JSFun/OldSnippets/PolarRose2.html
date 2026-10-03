@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polar Roses 2</title>
+    <style>
+      body
+      {
+        background-color: #000000;
+        color: #ff007f
+      }
+      textarea
+      {
+        font-family:monospace;
+      }
+      a:link { color: #0000ff; }
+      a:visited { color: #ff7faf; }
+    </style>
+    <!--<link href="/style.css" rel="stylesheet" type="text/css" media="all">-->
+  </head>
+  <body>
+  <!-- ####### INPUTS ####### -->
+<img alt="" border="0" data-original-height="1030" data-original-width="800" height="320" src="https://i.imgur.com/dVakBMb.png"/>
+<p id="First_p">k = n / d;<br />
+<input id="b_n" min="1" style="width: 127px;" type="number" value="13" />
+<input onclick="Change_n()" type="button" value="n" /><br />
+<input id="b_d" min="1" style="width: 127px;" type="number" value="7" />
+<input onclick="Change_d()" type="button" value="d" /><br />
+<br>
+<input id="b_sec" min="0.01" style="width: 127px;" type="number" value="42" />
+<input onclick="Change_sec()" type="button" value="Seconds" /><br />
+<input id="b_t" min="0.01" style="width: 127px;" type="number" value="3.5" />
+<input onclick="Change_t()" type="button" value="Turns" /> * Changes a lot, from different 'k' values, to complete a drawing!<br />
+<br><input type="checkbox" id="b_ck" value="Background"> <label for="b_ck"> Draw ugly background? Changes next cycle.</label><br>
+<br>
+<input type = "range" min = "0" max = "1000" value = "6" style = "width: 67%;" id = "s_xf"> Rect. plot 'x' size cosine freq.<br>
+<input type = "range" min = "0" max = "1000" value = "8" style = "width: 67%;" id = "s_yf"> Rect. plot 'y' size sine freq.<br>
+<input type = "range" min = "0" max = "1000" value = "333" style = "width: 67%;" id = "s_xs"> Rect. plot 'x' size.<br>
+<input type = "range" min = "0" max = "1000" value = "333" style = "width: 67%;" id = "s_ys"> Rect. plot 'y' size.<br>
+<span id="s_xy"> x freq.: 6 | y freq.: 8 | x size: 0.33 | y size: 0.33</span>
+<br>
+<input onclick="Frames = 0" type="button" value="RESET!" /> Frames goes to 'zero', which triggers a canvas reset check.<br>
+<br>
+<b style="font-size:16px">CLICK ON BUTTONS TO CHANGE INPUTS!!!</b><br>
+* You can save a frame by right-clicking the canvas, however, good luck picking a good plot.<br>
+* By increasing "Seconds", you can lower the plot pixel distance.<br>
+* Use the chart above to pick a rose. Each rose have a perimeter, so change the final angle with "Turns" input.<br>
+</p>
+<!-- ~*~ ~*~ ~*~ -->
+
+<!-- ####### ####### ######## MAIN ####### ####### ######## -->
+<br>
+<span id="Span1"></span>
+<br>
+<input type="checkbox" id="b_pause" value="Pause"> <label for="b_pause"> PAUSE! On a good click, you may have the frame you want!</label><br>
+<!-- CANVAS -->
+<canvas height="800" id="Canvas1" width="800"></canvas>
+<!-- ~*~ ~*~ ~*~ -->
+  
+<br><br>
+<br><h1>READ MORE: <a href="https://en.wikipedia.org/wiki/Rose_(mathematics)"> WIKI: Rose (mathematics)</a></h1><br>
+<p>
+<b id="First_p" style="font-size:12px">NON-ZERO INTEGER 'k':</b><br>
+* The curve will be rose-shaped with '2k' petals if 'k' is even, and 'k' petals when 'k' is odd.<br>
+* Each peak corresponds to a point lying on the circle 'r=a'. Line segments connecting successive peaks will form a regular polygon with an even number of vertices that has its center at the pole and a radius through each peak.<br>
+<b style="font-size:12px">ROSES WITH RATIONAL NUMBER VALUES FOR 'k':</b><br>
+* When both 'n' and 'd' are odd, the positive and negative half-cycles of the sinusoid are coincident. The graph of these roses are completed in any continuous interval of polar angles that is 'pi' long.<br>
+* When 'n' is even and 'd' is odd, or visa versa, the rose will be completely graphed in a continuous polar angle interval '2 * d * PI' long. Furthermore, the roses are symmetric about the pole for both cosine and sine specifications.<br>
+* In addition, when 'n' is odd and 'd' is even, roses specified by the cosine and sine polar equations with the same values of 'a' and 'k' are coincident. For such a pair of roses, the rose with the sine function specification is coincident with the crest of the rose with the cosine specification at on the polar axis either at 'theta = d * pi / 2' or at 'theta = 3d * pi / 2'. This means that roses 'r = a * cos(k * theta)' and 'r = a * sin(k * theta)' with non-zero integer values of 'k' are never coincident.<br>
+<b style="font-size:12px">A rose curve specified with an irrational number for 'k' has an infinite number of petals and will never complete!</b><br>
+</p><br>
+
+<!-- ####### #######  END MAIN  ####### ######## -->
+<!-- SCRIPTS -->
+<script>
+// #################################################
+// #################################################
+// #################################################
+
+// #################### GLOBAL ####################
+// ###### TEMPO #######
+let FPS = 30;
+let Interval = setInterval(CHECKINTERVAL, 1000 / FPS);
+let LastFrame = 600; // LastFrame / FPS = sec
+var Frames = 0;
+
+// ###### MODULATOR #######
+//let Phase = (GlobalFrames / LastFrame) * (6.2831 * 10);
+//let Random = 1 + Math.random() * 100;
+// #################################################
+
+// #################### START
+  
+var Canvas = document.getElementById("Canvas1");
+var ctx = Canvas.getContext("2d");
+
+// #################################################
+// POLAR AND INPUT STUFFS:
+var Span = document.getElementById("Span1");
+var b_d = document.getElementById("b_d");
+var b_n = document.getElementById("b_n");
+var b_sec = document.getElementById("b_sec");
+var b_t = document.getElementById("b_t");
+var d = 7, n = 13, sec = 42, k = 13 / 7, t2 = 3.5 * 6.283185;
+LastFrame = sec * FPS;
+function Change_d() { d = b_d.value; k = n / d; Frames = 0; }
+function Change_n() { n = b_n.value; k = n / d; Frames = 0; }
+function Change_sec() { sec = b_sec.value; LastFrame = sec * FPS; Frames = 0; }
+function Change_t() { t2 = b_t.value * 6.283185; Frames = 0; }
+
+var s_xf = document.getElementById("s_xf").value / 15.625;
+var s_yf = document.getElementById("s_yf").value / 15.625;
+var s_xs = document.getElementById("s_xs").value / 1000;
+var s_ys = document.getElementById("s_ys").value / 1000;
+document.getElementById("s_xf").oninput = function()
+{
+  s_xf = document.getElementById("s_xf").value / 15.625;
+  document.getElementById("s_xy").innerHTML = "x freq.: " + s_xf + " | y freq.: " + s_yf + " | x size: " + s_xs + " | y size: " + s_ys;  
+}
+document.getElementById("s_yf").oninput = function()
+{
+  s_yf = document.getElementById("s_yf").value / 15.625;
+  document.getElementById("s_xy").innerHTML = "x freq.: " + s_xf + " | y freq.: " + s_yf + " | x size: " + s_xs + " | y size: " + s_ys;  
+}
+document.getElementById("s_xs").oninput = function()
+{
+  s_xs = document.getElementById("s_xs").value / 1000;
+  document.getElementById("s_xy").innerHTML = "x freq.: " + s_xf + " | y freq.: " + s_yf + " | x size: " + s_xs + " | y size: " + s_ys;  
+}
+document.getElementById("s_ys").oninput = function()
+{
+  s_ys = document.getElementById("s_ys").value / 1000;
+  document.getElementById("s_xy").innerHTML = "x freq.: " + s_xf + " | y freq.: " + s_yf + " | x size: " + s_xs + " | y size: " + s_ys;
+}
+
+// FUNCTION STUFFS:
+var y = Canvas.height * 0.5, x = Canvas.width * 0.5;
+var r = y - 1, tn = 1, yc = 0, xc = 0;
+
+function Polar()
+{
+  if (Frames == 0)
+  {
+   ctx.fillStyle = 'rgb(0,0,0)';
+   ctx.fillRect(0, 0, Canvas.height, Canvas.width);
+   if (document.getElementById("b_ck").checked)
+   {
+    for (var Circ = 1; Circ < 15; ++Circ)
+    {
+     for (var rad = 0; rad < 1024; ++rad)
+     {
+   	  ctx.fillStyle = 'hsl(' + 360 * (rad + Circ) / (1024 + 7) + ', 67%, 33%)';
+   	  //ctx.fillRect(x + Math.cos(6.283185 * rad / 65535) * r, y + Math.sin(6.283185 * rad / 65535) * r, y, x); // Bug legal... :3
+      ctx.fillRect(
+				   Math.round((((Circ - 1) * 1024) + rad * (1024 * 15 / x))) % (x * 2),
+				   Math.floor((((Circ - 1) * 1024) + rad * (1024 * 15 / y)) / x * 2),
+				   (1024 * 15) / (4 * x * y), (1024 * 15) / (4 * y * x),
+				  );
+	  ctx.fillRect(
+       			  x + Math.cos(6.283185 * rad / 1024) * r / Circ,
+				  y + Math.sin(6.283185 * rad / 1024) * r / Circ,
+				  Math.sin(3 * 6.283185 * rad / 1024) * x * 0.142857 / Circ,
+       			  Math.cos(4 * 6.283185 * rad / 1024) * y * 0.142857 / Circ,
+				  );
+     }
+    }
+   }
+  }
+  Span.innerHTML = "k = n / d;<br>" + k + " = " + n + " / " + d + ';<br><b style="font-size:14px">FRAME: ' + Frames + ' ' + Frames % FPS + "</b> | t = "  + Frames / FPS;
+  tn = t2 * Frames / LastFrame;
+  yc = y - Math.round(r * Math.cos(k * tn) * Math.sin(tn));
+  xc = x + Math.round(r * Math.cos(k * tn) * Math.cos(tn));
+  s_xf = document.getElementById("s_xf").value / 15.625; s_yf = document.getElementById("s_yf").value / 15.625;
+  s_xs = document.getElementById("s_xs").value / 1000; s_ys = document.getElementById("s_ys").value / 1000;
+  
+  ctx.fillStyle = 'hsl(' + 360 * Frames / LastFrame + ', 100%, 50%)';
+  ctx.fillRect(xc, yc, Math.cos(s_xf * tn) * r * s_xs * 0.142857, Math.sin(s_yf * tn) * r * s_ys * 0.142857); // Draw a colorful pixel
+  document.getElementById("First_p").style.color = 'hsl(' + 360 * Frames / LastFrame + ', 33%, 33%)';  
+}
+
+// #################################################
+// #################### MAIN FUNCTION
+// #################################################
+function CHECKINTERVAL()
+{
+  if (!document.getElementById("b_pause").checked) { Polar(); ++Frames; }
+  Frames %= LastFrame;
+  //GlobalPhase = (GlobalFrames * PhasorInput.value / 7000) / 30; // 30 is the FPS
+}
+//Polar();
+</script>
+<!-- ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ -->
+  </body>
+</html>

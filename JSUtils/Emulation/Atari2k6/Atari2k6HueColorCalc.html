@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Atari 2600, Linear RGB Hue Color Calculator (NTSC)</title>
+    <style>
+      body
+      {
+        background-color: #000000;
+        color: #ff007f
+      }
+      textarea
+      {
+        font-family:monospace;
+      }
+      a:link { color: #0000ff; }
+      a:visited { color: #ff7faf; }
+    </style>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Atari 2600, Linear RGB Hue Color Calculator (NTSC)</h1>
+    <label for="inputX">Enter 'x' (0 to 1):</label>
+    <input type="text" id="inputX" pattern="[0-9]+(\.[0-9]+)?" step="0.01"><br>
+    <label for="inputBrightness">Enter Brightness (0 to 1):</label>
+    <input type="text" id="inputBrightness" pattern="[0-9]+(\.[0-9]+)?" step="0.01"><br>
+    <p><button id="calculateBtn">Calculate</button></p>
+    <div id="result">Result: </div>
+    <p><br><br>
+    <img src="https://i.imgur.com/syLszGv.png" alt="Color Reference">
+    </p>
+    
+    <script>
+    // CHANGE BRIGHTNESS FROM COLOR INSIDE A RGB POINTER:
+// Brightness wrap around '0' to '1'.
+function ysxATARI2k6_CLR_ChangeBrightnessNTSCPAL(Bright, Color)
+{
+    if (Bright > 1.0) { Bright -= Math.floor(Bright); } 
+    if (Bright < 0.0) { Bright *= -1; }
+    let C = Math.floor(Bright * 7) * 2; 
+    Color &= 0xF0;
+    return (C | Color);
+}
+
+// RETURN A RGB COLOR BY LINEAR HUE AND OVERWRITE POINTED 'uint8_t[3]':
+function ysxATARI2k6_CLR_LinearRGBNTSC(x, Bright)
+{
+    const ClrTable = [0x38, 0xFA, 0x2A, 0x1E, 0xDC, 0xCC, 0xBC, 0xAE, 0x9C, 0x86, 0x76, 0x68, 0x5A, 0x4A];
+    if (x < 0.0) { x *= -1; } 
+    if (x > 1.0) { x -= Math.floor(x); }
+    let C = Math.floor(x * 13);
+    C = ClrTable[C];
+    C = ysxATARI2k6_CLR_ChangeBrightnessNTSCPAL(Bright, C);
+    return C;
+}
+    
+    
+        document.getElementById('calculateBtn').addEventListener('click', () => {
+            const x = parseFloat(document.getElementById('inputX').value);
+            const brightness = parseFloat(document.getElementById('inputBrightness').value);
+            const result = ysxATARI2k6_CLR_LinearRGBNTSC(x, brightness);
+            document.getElementById('result').textContent = 'Result: ' + result + ' | Hex: ' + result.toString(16);
+        });
+    </script>
+</body>
+</html>
+

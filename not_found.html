@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Found</title>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+    <center><h1>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ Page Not Found ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h1>
+    <p>Room 404. Wrong place, Sophia is not here!</p><br>
+    <p>Enjoy this rose!</p><br>
+    <canvas height="98" id="CanvasRose" width="98"></canvas><canvas height="336" id="Canvas" width="336"></canvas><canvas height="336" id="CanvasRose0" width="98"></canvas><br>
+    <h1>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ 404 404 404 ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h1></center>
+    <script>
+
+const F = 60;
+const Tt = setInterval(TF, 1000 / F);
+let d = 7, n = 13, k = 13 / 7, t2 = 3.5 * 6.283185;
+let t = 0, T = 14 * F;
+
+let I = document.getElementById("Canvas");
+let i = Canvas.getContext("2d");
+
+let y = I.height * 0.5, x = I.width * 0.5;
+let r = y - 8, tn = 1, yc = 0, xc = 0;
+
+function f()
+{
+  if (t == 0) { i.fillStyle = 'rgb(0,0,0)'; i.fillRect(0, 0, I.height, I.width); }
+  tn = t2 * t / T;
+  yc = y - Math.round(r * Math.cos(k * tn) * Math.sin(tn));
+  xc = x + Math.round(r * Math.cos(k * tn) * Math.cos(tn));
+  i.fillStyle = 'hsl(' + 360 * t / T + ', 100%, 50%)'; i.fillRect(xc, yc, 7, 7);
+}
+
+let CR = document.getElementById("CanvasRose");
+let CRi = CR.getContext("2d");
+let CR0 = document.getElementById("CanvasRose0");
+let CR0i = CR0.getContext("2d");
+
+/*function g()
+{
+  CRi.beginPath();
+  CRi.moveTo(32, 153);
+  CRi.bezierCurveTo(4, 31, 5, 25, 10, 21);
+  CRi.bezierCurveTo(24, 20, 33, 22, 40, 20);
+  CRi.bezierCurveTo(20, 18, 47, 10, 49, 0);
+  CRi.bezierCurveTo(51, 11, 53, 16, 59, 18);
+  CRi.bezierCurveTo(67, 19, 75, 20, 83, 25);
+  CRi.bezierCurveTo(90, 29, 90, 36, 91, 45);
+  CRi.strokeStyle = "red"; CRi.lineWidth = 7; CRi.stroke();
+}*/
+
+function TF() { /*g();*/ f(); ++t; t %= T; }
+</script>

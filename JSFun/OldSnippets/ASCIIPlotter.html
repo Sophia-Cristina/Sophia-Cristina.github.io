@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Plotter</title>
+    <style></style>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+     <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  </head>
+  <body>
+  <h1>ASCII Plotter</h1>
+  <p>
+  This was first done in C++, it is ASCII because it was used in the terminal. In HTML it can be any char encoding.<br><br>
+  </p>
+  <h2>####### ####### #######</h2>
+  <br>
+  <!-- ####### INPUTS ####### -->
+<section>
+<p>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ PHASOR FREQ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</p>
+\[
+FPS=30,\qquad LastFrame=3600=2minutes
+\]
+\[
+\mathrm{Frames}
+\leftarrow
+\left(\mathrm{Frames}+1\right)
+\bmod \mathrm{LastFrame}
+\]
+
+\[
+\mathrm{Phase}
+=
+2\pi
+\left(
+\frac{\mathrm{Frames}}{\mathrm{FPS}}
+\right)
+\left(
+\frac{\mathrm{PhasorInput.value}}{10000}
+\right)^{1.75}
+\]
+<input
+type = "range"
+min = "0" max = "10000"
+value = "200" style = "width: 67%;"
+class = "slider" id = "PhasorInput">
+<span id="PhasorSpan">Phasor</span><br />
+</section>
+<!-- ~*~ ~*~ ~*~ -->
+
+<!-- ####### ####### ######## MAIN ####### ####### ######## -->
+<code>
+<div id="ASCIIPlot1" style="font-size: 6px;"></div><br />
+</code>
+<!-- ####### #######  END MAIN  ####### ######## -->
+<br>
+The function is based on this formula below:<br><br>
+<p>
+\[
+x=\frac{n}{N},\qquad C=2.59285714286
+\]
+
+\[
+B(\mathrm{Phase})
+=
+0.8\left(
+\frac{
+\sin\left(\frac{2\pi\cdot 3}{7}\mathrm{Phase}\right)+1
+}{2}
+\right)+0.2
+\]
+
+\[
+A_m=
+\frac{
+\sin\left(
+2\pi\sin\left(\frac{m\,\mathrm{Phase}}{7}\right)
++
+2\pi\,x\,(m+1)\,0.5
+\right)
+}{m+1}
+\]
+
+\[
+Y_{m,-1}=0
+\]
+
+\[
+Y_{m,k}
+=
+\frac{B(\mathrm{Phase})}{C}
+\left[
+Y_{m,k-1}
++
+\frac{
+\sin\left(
+7(k+1)2\pi\,x
+-
+2\pi\cdot1.33\,(\mathrm{Phase}+k)
+\right)
+}{k+1}
+\right],
+\qquad k=0,\ldots,6
+\]
+
+\[
+S_{-1}=0
+\]
+
+\[
+S_m
+=
+1.25\,
+\frac{
+\dfrac{S_{m-1}+A_m}{C}
++
+Y_{m,6}
+}{
+1+B(\mathrm{Phase})
+},
+\qquad m=0,\ldots,6
+\]
+
+\[
+\boxed{\mathrm{SumWave}=S_6}
+\]
+
+<!-- SCRIPTS -->
+<script>
+// #################### INTERVAL CONTROL
+let PhasorInput = document.getElementById("PhasorInput");
+let PhasorSpan = document.getElementById("PhasorSpan");
+PhasorSpan.innerHTML = " | Phasor Freq = " + Math.pow((PhasorInput.value) / 10000, 1.75);
+PhasorInput.oninput = function() { PhasorSpan.innerHTML = " | Phasor Freq = " + Math.pow((PhasorInput.value) / 10000, 1.75); }
+
+// #################### INTERVAL ####################
+// ###### TEMPO #######
+// FPS_to_ms(FPS) = 1000 / FPS = ms
+// 16.67 ms = 60 FPS
+// 33.33 ms = 30 FPS
+// 16.67 = 50 / 3 = ms;
+
+let FPS = 30;
+let Interval = setInterval(CHECKINTERVAL, 1000 / FPS);
+let LastFrame = 120 * FPS;
+let Frames = 0;
+
+// ###### MODULATOR #######
+let Phase;
+//let Phase = (Frames / LastFrame) * (6.2831 * 10);
+//let Random = 1 + Math.random() * 100;
+// #################################################
+
+// #################### ASCII PLOTTER
+let Mod = 0;
+function ASCIIPlotter1()
+{
+	let html = '';
+	let V = [];
+  
+  let N = 147.0;
+  for (let n = 0; n < N; ++n)
+  {
+    let SumWave = 0;
+    let x = n / N;
+  	for (let m = 0; m < 7; ++m)
+  	{
+    	 SumWave += Math.sin(Math.sin(Phase * m / 7) * 6.2831 + 6.2831 * x * (m + 1) * 0.5) / (m + 1);
+    	 let SumWave0 = 0;
+    	for (let k = 0; k < 7; ++k)
+    	{
+    	 SumWave0 += Math.sin(7 * (k + 1) * 6.2831 * x + (Phase + k) * -6.2831 * 1.33) / (k + 1);
+    	 SumWave0 /= 2.59285714286;
+    	 SumWave0 *= (0.8 * (Math.sin(Phase * 6.2831 * 3/7) + 1) * 0.5) + 0.2;
+    	}
+    	SumWave /= 2.59285714286;
+    	SumWave += SumWave0;
+    	SumWave /= 1 + ((0.8 * (Math.sin(Phase * 6.2831 * 3/7) + 1) * 0.5) + 0.2);
+    	SumWave *= 1.25
+    }
+    V.push(SumWave);
+  }
+  
+  let ASCIIPlot1 = document.getElementById('ASCIIPlot1');
+  let VSize = V.length;
+  let Max = 0, Min = 0;
+  let MaxAbs = 0, MinAbs = 0;
+  for (let n = 0; n < VSize; ++n)
+  {
+  	if (V[n] > Max) { Max = V[n]; MaxAbs = V[n]; }
+    if (V[n] < Min) { Min = V[n]; MinAbs = V[n]; }
+  }
+    
+	if (MaxAbs < 0) {let Absmx = 0; Absmx = MaxAbs * -1; MaxAbs += Absmx; MinAbs += Absmx; }
+	if (MinAbs < 0) {let Absmn = 0; Absmn = MinAbs * -1; MaxAbs += Absmn; MinAbs += Absmn; }
+
+	let md = MaxAbs - Max;
+	let Lines = 77;
+	let Name = "y:S:P:H:A:x:";
+  let Mod = 0;
+  let R;
+  let B;
+  
+	for (let n = 0; n < Lines; ++n)
+	{
+		let ValCeil = (MaxAbs * ((Lines - n) / Lines)), ValFloor = (MaxAbs * ((Lines - 1 - n) / Lines));
+  	for (let m = 0; m < VSize; ++m)
+		{
+			if (V[m] >= ValFloor - md && V[m] <= ValCeil - md)
+			{
+       	html += Name[Mod * 2] + Name[(Mod * 2) + 1];
+       	++Mod; Mod %= 6;
+			}
+			else
+			{
+				html += "¨:";
+			}
+			//R = Math.round(254 * (Lines - n + VSize - m) / (Lines + VSize));
+			//R = ((n + m) / (Lines + VSize));
+			//R = ((n) / (Lines));
+			//B = 127 + Math.round(127 * (n + m) / (Lines + VSize));
+			//R = Math.max(0, Math.min(1, R));
+			//R = (Math.round((1 - R) * 255)).toString();
+			//ASCIIPlot1.style.color = `#${R.toString(16)}00${B.toString(16)}`;
+			//ASCIIPlot1.style.color = `rgb(${R.toString()},0,${B})`;
+			//ASCIIPlot1.style.color = 'rgb(' + R.toString() + ',0,0)';
+			//ASCIIPlot1.style.color = 'hsl(' + (270 + 90.0 * ((n + m) / (Lines + VSize))) + ', 50%, 50%)';
+			//console.log('color string:', `rgb(${R},0,${B})`, {R, B});
+		}
+		html += ` | ${ValFloor - md} to ${ValCeil - md} | `;
+		html += '<br />';
+	}
+    document.querySelector('#ASCIIPlot1').innerHTML = html;
+}
+
+// #################################################
+// #################### MAIN FUNCTION
+// #################################################
+function CHECKINTERVAL()
+{
+	// ####### FUNCTIONS:
+  ASCIIPlotter1();
+  
+  // ####### FRAMES:
+  ++Frames;
+  Frames %= LastFrame;
+  Phase = 6.2831 * ((Frames / FPS) * Math.pow(PhasorInput.value / 10000, 1.75));
+}
+
+</script>
+<!-- ~*~ ~*~ ~*~ -->
+  <br><br><br><br><br><br><br>
+  </body>
+</html>

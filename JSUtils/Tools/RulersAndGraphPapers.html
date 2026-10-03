@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rulers and graph papers</title>
+    <style>
+    </style>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  <h1>~*~ RULERS AND GRAPH PAPERS ~*~</h1>
+  <p>
+  Three small tools based on my C++ versions:<br>
+  a linear ruler, graph paper, and a circular ruler.<br><br>
+  
+  These rulers are made to substitute a normal physical ruler. I made this program because four things:<br>
+  1) My physical ruler is losing the ink of certain marks, and it also got a new crack in it.<br>
+  2) Using another ruler, i noticed that some metric lines are not perfectly aligned from one ruler to another. These rulers are made for school and not high level precision (not that i truly need it), so a computer may in fact be more accurate than it.<br>
+    After i made such programs, i noticed that after certain steps, even tough the marks are on a consistent place, the alignment aren't, one of my rulers have marks where the ink is not centered to the correct place, even if this misalignment is placed on the correct metric.<br>
+  The circular ruler, i noticed is useful since i don't have a ruler for measure of the size of something based on circumference. I also noticed it is easier to measure angles if i draw on a paper over my screen.<br>
+  3) The screen light helps when drawing on a paper over the screen. Also, the image frame is a good indicator of alignment.<br>
+  4) A digital ruler is easier to carry everywhere or to access it while not needing to worry if you are carrying it or not, the problem is just the calibration. It also does not break and get lost.<br><br>
+  
+    
+  * Find the correct scale for the unit size you want, it depends on your screen size and resolution.<br>
+	* * For example, 'Scale = 36.414' is '1 cm' in my screen (seems different in HTML Canvas than C++, which is '36.44813248', it may not be correctly aligned for big measures. Also, Canvas stroke is two pixels wide). This can be read as 'pixels per cm', but you can use other measures by modifying the 'Scale', ex.:<br>
+	    '36.414 * 2.54' would turn the rulers plotted in my screen as based on inches (pixels per inches).<br><br>
+	
+	* If you calibrate based on the page view, then it might differ from when you right-click and open the image in a new tab to either use it or download it.<br>
+	* * In my screen, 'Scale = 33.4' is '1 cm' if not opening the image in a new tab.<br><br>
+	
+	<i>// If the pictures below does not show, it is because it is uploaded in Imgur and something may have happened on their side (i upload there to save space for me).</i><br>
+	<img src="https://i.imgur.com/O4iKStZ.png" alt="Real Ruler" width="480"><br>
+	<i>The ruler here shows to be aligned with my metric, these outputs are from C++ (with CImg).<br>
+	You can see that some lines are not perfectly aligned, even if on the correct metric, it may be because, with about 3.6 pixels per mm, sometimes the line is rounded by one pixel, and then, misaligning. However, this ruler in the image is the one that, in some metrics, does not align with another ruler.<br>
+	The '0' is in fact in the correct place, but since the ruler have a thickness, a change in angle may make it look misaligned, i tested this ruler numerous time, even cutting a paper, and it fits the image correctly.</i><br><br>
+	
+	<img src="https://i.imgur.com/5DOmfYn.png" alt="Paper Overlay" width="480"><br>
+	<i>The picture does not represent how easier it is to see the grid lines when overlaying a paper over the screen, seems like the cellphone have a problem with the light of the screen. Also, in this picture, it is not on the centimeter scale, this is based on the size of the paper divided by four.<br>
+	Still, this is one great use i have for this. If you like to mess up with tiling and etc, this is very useful. I was designing some tiles for myself and i can draw pretty fast this way to test symmetries.
+	</i><br><br>
+  </p>
+  <br>
+  <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+  <br>
+  <h2>### Common Colors ###</h2>
+  <label>Main / Metric R:<input type="number" id="color_r" value="170" min="0" max="255"></label>
+  <label>G:<input type="number" id="color_g" value="0" min="0" max="255"></label>
+  <label>B:<input type="number" id="color_b" value="85" min="0" max="255"></label>
+  <br><br>
+
+  <label>Subdivision R:<input type="number" id="subcolor_r" value="85" min="0" max="255"></label>
+  <label>G:<input type="number" id="subcolor_g" value="0" min="0" max="255"></label>
+  <label>B:<input type="number" id="subcolor_b" value="42" min="0" max="255"></label>
+  <br><br>
+
+  <label>Background R:<input type="number" id="bg_r" value="127" min="0" max="255"></label>
+  <label>G:<input type="number" id="bg_g" value="127" min="0" max="255"></label>
+  <label>B:<input type="number" id="bg_b" value="127" min="0" max="255"></label>
+  <br><br>
+  
+  <h2>### Common variables ###</h2>
+  <b>* NOTE:</b> Such variables will change the result of EVERY drawing in this page as soon as you click to draw it.<br>
+  * If your screen is not as big, millimeter sub-divisions may clump together or will vary between odd and even pixels. There is no way to fix this, as you can see by my own scale, it is basically 3 to 4 pixels per millimeter.<br>
+    What i do instead is to use five sub-divisions and i try to draw accurately at the mid of the empty space to define a millimeter.<br><br>
+  
+  <label>Scale (mine is '36.414' pixels per cm or '33.4' on this page):<input type="number" id="input_scale" value="36.414" step="any"></label>
+  <label>Ruler Size:<input type="number" id="input_size" value="30" step="any"></label>
+  <label>Thickness:<input type="number" id="input_thick" value="1.33" step="any"></label>
+  <label>Sub-divisions:<input type="number" id="input_subdiv" value="10" min="1" step="1"></label>
+  
+  <br><br>
+  <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+  <br>
+
+  <h2>####### LINEAR RULER #######</h2>
+  
+  <button id="draw_ruler">Draw Ruler</button>
+  <br><br>
+  <canvas id="ruler_canvas" width="1200" height="200"></canvas>
+  
+  <br><br>
+  <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+  <br>
+  
+  <h2>####### GRAPH PAPER #######</h2>
+  <label>
+    Square Side:
+    <input type="number" id="graph_cm" value="1" step="any">
+  </label>
+  <label>
+    Squares per Row:
+    <input type="number" id="graph_width" value="10" min="1" step="1">
+  </label>
+  <label>
+    Squares per Column:
+  <input type="number" id="graph_height" value="10" min="1" step="1">
+  </label>
+  <br><br>
+  <button id="draw_graph">Draw Graph Paper</button>
+  <br><br>
+  <canvas id="graph_canvas" width="800" height="800"></canvas>
+  
+  <br><br>
+  <h2>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</h2>
+  <br>
+
+  <h2>####### CIRCULAR RULER #######</h2>
+  <br><br>
+  Circle ruler is just like a normal ruler, but as if you bend it until it becomes a circle.<br><br>
+	* Let's say you want 6 lines and 6 smaller lines, you can then double the scale and use 'Measure_size = 6' and 'SubDiv = 2', pick 'Circumference' option, and this is going to make a circle with 12cm circumference with marks at a clock position.<br>
+	* If you use the 'Circumference' option, the circle will be divided by the 'Measure_size' value. That means that if you connect each metric line, you can form a regular polygon.<br>
+	* If you want to make angle measures, change to a new scale, let's say your scale is 30, and you want to measure degrees with metrics at every 15 degrees (360/15=24) with a ruler of 50cm. You do this: 'Scale = (cm/metric_lines)*Scale_Actual = (50/24)*30'. Then 'SubDiv = 15'.<br>
+	* The metric lines are OUTSIDE the ruler circumference, that means, size measure is from the inner circle.<br><br>
+  <label>
+    Measurement basis:
+    <select id="circle_flag">
+      <option value="0">Radius</option>
+      <option value="1" selected>Circumference</option>
+      <option value="2">Area</option>
+      </select><br><br>
+    * NOTE: Ruler size and metric units are always based on 'Circumference'.<br>
+		        That means if you select 'Radius' and define 'Measure_size = 1', then it will have 6 (floor(TAU)) metric lines, not '1'.<br>
+		        If you use 'Area', the amount of metric lines is based by the integer value: 'floor(2*PI*sqrt(Measure_size/PI))'; Which is just the algebra to get the radius size from the area size.<br><br>
+  </label>
+  <br><br>
+  <button id="draw_circle">Draw Circular Ruler</button>
+  <br><br>
+  <div id="circle_info"></div>
+  <br>
+  <canvas id="circle_canvas" width="1200" height="1200"></canvas>
+  <br><br>
+  
+  <script type="module" src="./RulersAndGraphPapers.js"></script>
+  
+  <br><br><br><br><br><br><br>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+Due to the effectively unbounded scope of mathematics, this directory may grow substantially over time. As specific areas expand, they may be refactored into dedicated subdirectories. Notable examples include the `Geo` and `Physics` directories, both of which originated as single headers. Similar restructuring may occur for other components as the codebase evolves.
+
+As a consequence, changes in structure may affect existing include paths. Legacy source code may encounter compilation issues if referenced headers are relocated. For convenience, a unified header (`ysxMath.h`) is provided, which aggregates multiple subcomponents. Including this header can mitigate such issues.
+
+The header `ysxMoney.h` is currently considered obsolete. While it was initially intended to host mathematical functions related to economics, most relevant functionality is more appropriately categorized under the `ysxTrade` directory.
+
+This directory may also contain experimental or personal mathematical constructs, including original formulations and exploratory implementations (e.g., fractal generation).
+
+* Not all mathematical functionality is centralized here. Some mathematical components are embedded within domain-specific directories where they are most relevant. For example, graphical or plotting-related mathematics is typically located within `ysxLibsUtils`, under library-specific subdirectories. As an illustration, Mandelbrot fractal implementations are currently found in:
+  * `ysxLibsUtils/CImg/Plotters/ysxciFractals.h`
+  rather than in a general-purpose header such as `ysxFractal.h`. There are plans to introduce core mathematical definitions (e.g., Mandelbrot functions) into a more centralized location, though such changes may introduce compatibility issues with existing code.
+
+---
+
+This directory represents one of the earliest components of the codebase, with `ysxMath.h` being the original and sole header. As a result, it contains legacy conventions and structural inconsistencies that may be revised over time.
+
+Refactoring efforts may involve modifying function signatures, relocating classes, or reorganizing headers. These changes can occasionally introduce breaking changes in dependent code. For example, certain functions that previously required explicit variables have been updated to use function pointers.
+
+Efforts will be made to preserve external interfaces where feasible, with most modifications confined to internal implementations. In many cases, compatibility issues can be resolved by including additional headers or updating include paths accordingly.
+

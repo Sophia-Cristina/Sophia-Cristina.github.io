@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOE Documentation, Proof-of-Concept and Tutorial</title>
+    <style>
+    </style>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  <h1>~*~ IOE DOCUMENTATION, PROOF-OF-CONCEPT AND TUTORIAL ~*~</h1>
+  <br>
+  <h2>Internet Operating Environment</h2>
+  <br>
+  <p>
+  The Internet Operating Environment (IOE) is an implementation of a protocol for treating independently distributed JavaScript programs as interoperable applications within a common execution environment.<br>
+  The broader concept and motivation are described in the '<a href="https://telegra.ph/The-Internet-OS-A-Community-Driven-Operating-System-Built-from-JavaScript-09-18">IOE proposal article</a>'.<br><br>
+  
+  This document takes a more practical approach: instead of merely describing the protocol, it implements its components step by step through small executable examples.<br>
+  Each example introduces a specific part of the protocol and can be executed directly from this document, making the page simultaneously a tutorial, technical reference, and proof of concept.<br>
+  The initial implementation is intentionally small. Its purpose is not to create a complete operating system, but to demonstrate how applications, dependencies, interfaces, and execution environments can be standardized independently of the particular user interface used to run them.<br>
+  </p><br><br>
+  
+  INDEX (this doc is a W.I.P, this index may change by time):
+  <ul>
+    <li>How This Proof of Concept Works</li>
+    <li>Hello World</li>
+    <li>Wrapping Existing JavaScript</li>
+    <li>Dependencies</li>
+    <li>Application Inputs and Interaction</li>
+    <li>Application Loading</li>
+    <li>Interface Resolution</li>
+    <li>Application Execution</li>
+    <li>Graphical Interfaces</li>
+    <li>Multiple Applications / Discovery</li>
+    <li>Remote Applications</li>
+    <li>Security / Permissions</li>
+  </ul>
+  
+  <br><br>
+  <hr><br>
+  
+  <section id="IOEProcess">
+
+  <h1>How This Proof of Concept Works</h1>
+  <br>
+  <h2>1. The IOE Environment</h2>
+
+  <p>
+    We begin with a minimal IOE environment. The environment is responsible for providing the facilities through which applications can operate. It is not itself the application.
+  </p>
+
+  <pre>
+HTML Document
+      |
+      v
++---------------------------+
+| Internet Operating        |
+| Environment               |
+|                           |
+|  Application Loader       |
+|  Interface                |
+|  Application Management   |
++---------------------------+
+      |
+      v
+   Application
+  </pre>
+
+  <p>
+    The first implementation will intentionally be very small. There is no
+    attempt to create a complete operating system or desktop environment.
+    The objective is to demonstrate the protocol with the smallest practical
+    implementation.
+  </p>
+  <br>
+  
+  <h2>2. The Application</h2>
+
+  <p>
+    An IOE application is an independently implemented JavaScript program that
+    follows the interface defined by the IOE protocol.
+  </p>
+
+  <p>
+    The application should not need to know how the surrounding environment is
+    implemented. In particular, an application should describe what resources
+    or interfaces it requires rather than directly depending on a particular
+    graphical or terminal implementation.
+  </p>
+
+  <pre>
+Application
+     |
+     |  "I require a text interface."
+     v
+IOE Protocol
+     |
+     v
+Environment provides the interface
+  </pre>
+  <br>
+  
+  <h2>3. The Application Header</h2>
+
+  <p>
+    Before executing an application, the environment needs information about
+    it. The first prototype will therefore give every IOE application a
+    protocol header.
+  </p>
+
+  <p>
+    The header will describe information such as the application's name,
+    version, required interfaces, optional interfaces, dependencies, and,
+    when applicable, graphical window requirements.
+  </p>
+
+  <p>
+    For the first prototype, the header will be represented by a JavaScript
+    module returning a JavaScript object. This keeps the application
+    self-contained while retaining a structure that can later be represented
+    as JSON or another machine-readable format.
+  </p>
+
+  <pre>
+export const IOE_Application =
+{
+    header:
+    {
+        name: 'Hello World',
+        version: '0.1',
+
+        interface:
+        {
+            required:
+            [
+                'text'
+            ]
+        },
+
+        dependencies:
+        [
+        ]
+    },
+
+    run: function(a, b) { return('Hello World! a + b = ' + (a + b)); }
+};
+  </pre>
+  <br>
+
+  <h2>4. Interface Requirements</h2>
+
+  <p>
+    The protocol will distinguish between an application's requirements and
+    the implementation used to satisfy those requirements.
+  </p>
+
+  <p>
+    For example, a program may require a text interface without requiring a
+    specific terminal emulator. Another program may require a graphical window
+    without requiring X11, Wayland, SDL, Canvas, or any other particular
+    window system.
+  </p>
+
+  <pre>
+Application
+     |
+     |  requires: WINDOW
+     v
+IOE Interface
+     |
+     +-------------------+
+     |                   |
+     v                   v
+HTML Canvas          Native Window
+  </pre>
+
+  <p>
+    This separation is important because the same application should be
+    capable of operating under different implementations of the IOE
+    environment.
+  </p>
+  <br>
+
+  <h2>5. Text Applications</h2>
+
+  <p>
+    The first application will be a simple "Hello World" program that uses
+    the text interface.
+  </p>
+
+  <p>
+    The purpose is analogous to a conventional command-line program: it does
+    not request a graphical window merely to print text. An IOE implementation
+    could provide this interface using an ordinary HTML element, such as a
+    <code>&lt;span&gt;</code>, while another implementation could display the
+    same output in a terminal, console, or native text interface.
+  </p>
+
+  <pre>
+IOE Application
+      |
+      v
+   TEXT API
+      |
+      +-------- HTML &lt;span&gt;
+      |
+      +-------- TUI
+      |
+      +-------- Native terminal
+  </pre>
+  <br>
+
+  <h2>6. Graphical Applications</h2>
+
+  <p>
+    Later examples will demonstrate applications that require a graphical
+    window.
+  </p>
+
+  <p>
+    Such an application will declare its graphical requirements through the
+    protocol. It may also describe the desired configuration of its window,
+    such as its dimensions, title, and whether it can be resized.
+  </p>
+
+  <pre>
+  {
+    interface:
+    {
+        required: ['window']
+    },
+
+    window:
+    {
+        width: 640,
+        height: 480,
+        resizable: true
+    }
+  }
+  </pre>
+
+  <p>
+    The application does not need to determine how this window is created.
+    An IOE implementation could use an HTML Canvas, another HTML element,
+    a native window system, SDL, or another suitable mechanism.
+  </p>
+  <br>
+
+  <h2>7. Dependencies</h2>
+
+  <p>
+    The protocol will also allow applications to declare dependencies.
+    This provides a way for independently developed JavaScript libraries and
+    headers to become components of an IOE application.
+  </p>
+
+  <p>
+    For example, an IOE application could use a library from my 'JSHeaders' directory while
+    simultaneously depending on IOE-specific functionality.
+  </p>
+
+  <pre>
+IOE Application
+      |
+      +---- IOE Includes
+      |
+      +---- JSHeaders
+      |       |
+      |       +---- ysxColor
+      |       +---- ysxDraw
+      |       +---- ysxGeoPlot
+      |
+      +---- Application Code
+  </pre>
+
+  <p>
+    This will allow the proof of concept to demonstrate not only application
+    execution, but also the possibility of a distributed ecosystem in which
+    independently maintained components can be combined.
+  </p>
+  <br>
+
+  <h2>8. The Execution Process</h2>
+
+  <p>
+    The complete process can therefore be summarized as follows:
+  </p>
+
+  <pre>
+1. Locate an application
+        |
+        v
+2. Load its protocol information
+        |
+        v
+3. Read the application header
+        |
+        v
+4. Determine its requirements
+        |
+        v
+5. Compare requirements with
+   the capabilities of the environment
+        |
+        v
+6. Load the application
+        |
+        v
+7. Initialize the application
+        |
+        v
+8. Provide its requested interfaces
+        |
+        v
+9. Application executes
+  </pre>
+
+  <p>
+    This sequence will be implemented incrementally. Each step will first be
+    demonstrated independently before additional functionality is introduced.
+  </p>
+  <br>
+
+  <h2>9. The First Experiment</h2>
+
+  <p>
+    The first experiment will therefore be intentionally simple:
+  </p>
+
+  <pre>
+IOE Environment
+      |
+      v
+Application Loader
+      |
+      v
+HelloWorld.js
+      |
+      +---- IOE_Application
+      |
+      +---- Application
+               |
+               v
+          Text Interface
+               |
+               v
+        "Hello, World!"
+  </pre>
+
+  <p>
+    Once this minimal system is operational, subsequent examples can extend
+    the same protocol with graphical interfaces, dependencies, remote
+    applications, window configuration, and other capabilities.
+  </p>
+
+  <p>
+    The goal is to keep every step small enough that the implementation remains
+    understandable while progressively demonstrating the capabilities of the
+    Internet Operating Environment.
+  </p>
+  </section>
+
+  <!-- ####### EXAMPLE HELLO WORLD ####### -->
+
+  <br><br>
+  <hr>
+  <br>
+  
+  <section>
+
+  <h1>Hello World</h1>
+
+  <p>
+    We can now begin implementing the protocol with the simplest possible application: the <strong>Hello World</strong> application.<br>
+      An IOE application first provides a header describing itself. In this example, the header is provided by the module:<br>
+    <code>IOE_Application</code>.
+    <br><br>
+      The module is part of the application itself and is therefore not manually written into this document. Neither the IOE loader needs to know the name of the application, only the URL.<br>
+  </p><br>
+
+  <h3>Application Header</h3>
+
+  <p>
+    The IOE environment calls the application's header function and receives the following information (the text below is from the script itself):<br>
+  </p>
+  ####### BEG HEADER #######<br>
+  <pre id="HelloWorldHeader"></pre>
+  ####### END HEADER #######<br>
+  
+  <p>
+    Since this application is intentionally simple, its header declares only its name, version, and required interface. It has no dependencies and requires only a text interface.<br>
+    And because this is an example in this document, the script inside this HTML parses by already knowing what is inside the header. Every interface should have its own way to deal with it.
+  </p><br>
+
+  <h3>Parsing the Application</h3>
+
+  <p>
+    The IOE parser receives the returned header and verifies that the application provides the information required by the protocol.<br>
+    The parser identifies that the application requires a text interface. The IOE environment can therefore route the application's output to a text interface provided by the host environment.
+  </p><br>
+
+  <h3>Application Input</h3>
+
+  <p>
+    The application also accepts two input values, <code>a</code> and <code>b</code>. Change their values below and execute the application.
+  </p>
+
+  <label>a: <input type="number" id="HelloWorldInputA" value="10"></label><br>
+  <label>b: <input type="number" id="HelloWorldInputB" value="20"></label><br><br>
+  <button id="HelloWorldRun">Run Application</button><br><br>
+
+  <h3>Text Interface</h3>
+
+  <p>
+    For this proof of concept, the text interface is represented by an HTML <code>&lt;span&gt;</code> element, like the one below.<br>
+    This HTML script, for the sake of being a proof-of-concept, also test if the interface required is 'text' before asking the app for an output.
+  </p>
+
+  <pre>&lt;span id="SpanTerminal"&gt;&lt;/span&gt;</pre>
+
+  <p>
+    The element itself is supplied by the environment. The 'Hello World' application does not directly manipulate it.
+  </p><br>
+
+  <p>
+    Application output (clean at 300 characters limit):<br>
+    ####### BEG TERMINAL #######<br>
+    <span id="SpanTerminal"></span><br>
+    ####### END TERMINAL #######<br>
+  </p><br>
+
+  <p>
+    The text displayed above is produced by the Hello World application. It is not directly written into this document.
+  </p><br>
+</section>
+<script type="module">
+  import { IOE_LoadApplication } from "/IOE/includes/IOELoader.js";
+   
+  const HelloWorldApp = await IOE_LoadApplication("/IOE/Examples/HelloWorld.js");
+  let HelloWorldHeaderString = "NAME: " + HelloWorldApp.header.name + "<br>VERSION: " + HelloWorldApp.header.version + "<br>INTERFACE.REQUIRED: " + HelloWorldApp.header.interface.required[0] + "<br>";
+  document.getElementById("HelloWorldHeader").innerHTML = HelloWorldHeaderString;
+  
+  let TerminalPrint = "";
+  
+  document.getElementById("HelloWorldRun").addEventListener
+  (
+    "click",
+    function()
+    {
+        const HelloWorldInputA = Number(document.getElementById("HelloWorldInputA").value);
+        const HelloWorldInputB = Number(document.getElementById("HelloWorldInputB").value);
+        let HelloWorldRequired = HelloWorldApp.header.interface.required;
+        
+        let Requirements = []; let IsText = false;
+        for (let i = 0; i < HelloWorldRequired.length; ++i)
+        {
+            Requirements.push(HelloWorldRequired[i]);
+            if (HelloWorldRequired[i] == "text") { IsText = true; }
+        }
+
+        if (IsText)
+        {
+            if (TerminalPrint.length > 300) { TerminalPrint = ""; }
+            TerminalPrint += HelloWorldApp.run(HelloWorldInputA, HelloWorldInputB) + "<br>";
+            document.getElementById("SpanTerminal").innerHTML = TerminalPrint;
+        }
+    }
+  );
+</script>
+<br>
+<hr>
+<br>
+<section>
+  <h1>Wrapping Existing JavaScript</h1>
+  
+  <p>
+    An important property of the IOE protocol is that an application does not necessarily have to be written specifically for IOE. Existing JavaScript code can instead be wrapped by an IOE application interface.<br>
+    To demonstrate this, the following example does not load another JavaScript file. Instead, a simple existing JavaScript function is defined directly in this document and then wrapped by an <code>IOE_Application</code> object.<br>
+    The original function has no knowledge of IOE. The wrapper provides the metadata required by the protocol and connects the IOE <code>run()</code> operation to the existing function.
+  </p>
+
+  <pre><code>
+    function HelloWorld(a, b) { return( "Hello World! a + b = " + (a + b)); }
+
+    const IOE_Application =
+    {
+    header:
+    {
+      name: "Wrapped Hello World",
+      version: "0.1",
+
+      interface:
+      {
+        required:
+        [
+          "text"
+        ]
+      }
+    },
+
+    run: function(a, b) { return(HelloWorld(a, b)); }
+    };
+  </code></pre>
+
+  <p>
+    The IOE can now interact with <code>IOE_Application</code> in exactly the same way as it interacted with the previous Hello World application.<br>
+    The difference is that the actual application logic was not written as part of the IOE protocol. It was simply wrapped by it.
+  </p>
+
+  <pre><code>
+    const Result = IOE_Application.run(10, 20);
+    document.getElementById("SpanTerminal").innerHTML = Result;
+  </code></pre>
+
+  <p>
+    This distinction is important: IOE is intended to provide an interoperability layer for existing JavaScript code, rather than requiring every application to be rewritten as an IOE application from the beginning.
+  </p>
+</section>
+<br>
+<hr>
+<br>
+
+  <section>
+  <h1>Dependencies</h1>
+
+  <p>
+    An IOE application may depend on JavaScript code that is not part of the application itself. Instead of requiring the application to directly import that code, the application can declare its dependencies in its header.<br>
+    This allows the IOE to resolve the required modules before the application is executed. The dependency mechanism therefore separates two different requirements: an <em>interface</em> describes a capability that the IOE environment must provide, while a <em>dependency</em> identifies external code required by the application.
+  </p>
+  
+  <pre><code>dependencies: [ { name: 'ysxTRI_Triangle', url: '/JSHeaders/ysxMath/Geo/ysxTri.js' } ]</code></pre>
+
+  <p>
+    The following example uses the existing <code><a href="/JSHeaders/ysxMath/Geo/ysxTri.js">ysxTRI_Triangle</a></code> class as a dependency. The class was not created specifically for this IOE example. The IOE application simply declares that it needs the class and uses it to implement a triangle calculator.<br>
+    Three values are supplied by the user: the sides <code>a</code> and <code>b</code>, and the included angle <code>gamma</code>.<br>
+    The application constructs a triangle using the resolved dependency and returns the information generated by its <code>CoutInfo()</code> function.
+  </p>
+
+  <pre><code>
+  const IOE_Application =
+  {
+    header:
+    {
+      name: 'Triangle Calculator',
+      version: '0.1',
+      interface: { required: [ 'text' ] },
+      dependencies: [ { name: 'ysxTRI_Triangle', url: '/JSHeaders/ysxMath/Geo/ysxTri.js' } ]
+    },
+    
+    run: function(a, b, gamma, dependencies)
+    {
+      const Triangle = new dependencies.ysxTRI_Triangle(a, b, gamma);
+      return(Triangle.CoutInfo());
+    }
+  };
+  </code></pre>
+
+  <p>The important point is that the triangle class itself has not been converted into an IOE application. It remains an ordinary JavaScript module. IOE provides a mechanism for existing code to become part of an application through a declared dependency.</p>
+
+  <p>The resulting execution flow is therefore:</p>
+  <pre><code>
+    IOE application
+    |
+    v
+    declares dependency ysxTri.js
+    |
+    v
+    provides ysxTRI_Triangle
+    |
+    v
+    IOE resolves dependency
+    |
+    v
+    Triangle Calculator
+    |
+    v
+    constructs triangle
+    |
+    v
+    CoutInfo()
+    |
+    v
+    text interface
+  </code></pre>
+
+  <p>This is an important part of the interoperability model of IOE. Existing JavaScript libraries do not need to be rewritten merely because an IOE application wants to use them. The IOE application can act as the protocol-level wrapper around existing code.</p>
+  
+  <p>
+    <label>a: <input type="number" id="TriangleInputA" value="3"></label>
+    <label>b: <input type="number" id="TriangleInputB" value="4"></label>
+    <label>gamma (rad): <input type="number" id="TriangleInputGamma" value="1.5707963268"></label>
+  </p>
+
+  <button id="TriangleRunDependencies">Calculate</button>
+  <br><br>
+  ####### BEG HEADER #######<br>
+  <span id="TriangleHeaderDependencies"></span>
+  ####### END HEADER #######<br>
+  <br>
+  ####### BEG TERMINAL #######<br>
+  <span id="TriangleOutputDependencies"></span>
+  ####### END TERMINAL #######<br>
+  </section>
+  <script type="module">
+  import { IOE_LoadApplication } from "/IOE/includes/IOELoader.js";
+  const TriangleApp = await IOE_LoadApplication("/IOE/Examples/Dependencies.js");
+  
+  const TriangleHeaderDependenciesString = "NAME: " + TriangleApp.header.name + "<br>VERSION: " + TriangleApp.header.version + "<br>INTERFACE.REQUIRED: " + TriangleApp.header.interface.required[0] + "<br>DEPENDENCIES: " + TriangleApp.header.dependencies.length + "<br>";
+  document.getElementById("TriangleHeaderDependencies").innerHTML = TriangleHeaderDependenciesString;
+
+  document.getElementById("TriangleRunDependencies").addEventListener
+  (
+      "click",
+      function()
+      {
+          const a = Number(document.getElementById("TriangleInputA").value);
+          const b = Number(document.getElementById("TriangleInputB").value);
+          const gamma = Number(document.getElementById("TriangleInputGamma").value);
+          const Result = TriangleApp.run(a, b, gamma, TriangleApp.dependencies);
+          document.getElementById("TriangleOutputDependencies").innerHTML = Result;
+      }
+  );
+</script>
+  <br>
+  <hr>
+  <br>
+  <section id="ApplicationInputs">
+
+  <h1>Application Inputs and Interaction</h1>
+
+  <p>
+    When an IOE environment loads an unknown application, it cannot assume how many inputs the application requires.<br>
+    The number of JavaScript function parameters is also insufficient to describe an application's input requirements, because a parameter does not specify what the value represents, what type it has, or how the environment should obtain it.<br>
+    IOE therefore allows applications to declare their inputs in the application header.
+  </p>
+
+  <pre><code>
+  inputs:
+  [
+    { name: 'a', type: 'number' },
+    { name: 'b', type: 'number' },
+    { name: 'gamma', type: 'number' }
+  ]
+  </code></pre>
+
+  <p>
+    The application can then request these values through the IOE input interface rather than accessing HTML elements directly.
+  </p>
+
+  <pre><code>run: function(IOE)
+  {
+    const a = IOE.input.number('a');
+    const b = IOE.input.number('b');
+    const gamma = IOE.input.number('gamma');
+    ...
+  }
+  </code></pre>
+
+  <p>
+    This separates the application from the implementation of the user interface. In the current HTML proof of concept, <code>IOE.input.number()</code> reads from an HTML <code>&lt;input&gt;</code> element.<br>
+    A different IOE implementation could instead obtain the same value from a terminal, a graphical control, a remote interface, or another input mechanism.<br>
+    <br>
+    The IOE can also generate the required controls from the application's input declaration. Consequently, the documentation does not need to know whether an application requires one input, three inputs, or many more.<br>
+    The application describes its requirements and the IOE creates the corresponding interface.<br>
+    <br>
+    The triangle calculator demonstrates this mechanism using the existing <code>ysxTRI_Triangle</code> class. Its three values, <code>a</code>, <code>b</code>, and <code>gamma</code>, are declared by the application and obtained through the IOE input interface.
+  </p>
+
+  <pre><code>Application
+    |
+    | declares inputs
+    v
+IOE header
+    |
+    | generates interface
+    v
+HTML input controls
+    |
+    | user supplies values
+    v
+IOE.input.number()
+    |
+    v
+Application.run()
+    |
+    v
+ysxTRI_Triangle
+    |
+    v
+CoutInfo()
+    |
+    v
+text interface</code></pre>
+
+  <p>
+    This mechanism also provides a foundation for interactive applications.<br>
+    The current implementation reads values that are already present in the generated controls, but the same interface can later be implemented as an interactive request mechanism similar to <code>std::cin</code> in C++.<br>
+    The application would continue to request a value through the IOE interface while the environment determines how that value is obtained.
+  </p>
+  <br>
+  ####### BEG HEADER #######<br>
+  <span id="TriangleHeaderDynamicIn"></span>
+  ####### END HEADER #######<br>
+  <br><br>
+  ####### BEG DYNAMIC INPUTS #######<br>
+  // These inputs are SELF-GENERATED:<br>
+  <div id="TriangleInputsDynamicIn"></div>
+  ####### END DYNAMIC INPUTS #######<br>
+  <button id="TriangleRunDynamicIn">Calculate</button>
+  <br><br>
+  ####### BEG TERMINAL #######<br>
+  <span id="TriangleOutputDynamicIn"></span>
+  ####### END TERMINAL #######<br>
+</section>
+  <script type="module">
+      import { IOE_LoadApplication } from "/IOE/includes/IOELoader.js";
+      import { IOE_CreateEnvironment, IOE_RunApplication } from "/IOE/includes/IOERunner.js";
+      import { IOE_GenerateInputs } from "/IOE/includes/IOEInputGenerator.js";
+    
+      const TriangleApp = await IOE_LoadApplication("/IOE/Examples/DynamicInputs.js");
+      IOE_GenerateInputs(TriangleApp, document.getElementById("TriangleInputsDynamicIn"));
+      const IOE = IOE_CreateEnvironment(TriangleApp);
+    
+      const TriangleHeaderDynamicInString = "NAME: " + TriangleApp.header.name + "<br>VERSION: " + TriangleApp.header.version + "<br>INTERFACE.REQUIRED: " + TriangleApp.header.interface.required.join(", ") +
+        "<br>DEPENDENCIES: " + TriangleApp.header.dependencies.length + "<br>INPUTS: " + TriangleApp.header.inputs.length + "<br>";
+      document.getElementById("TriangleHeaderDynamicIn").innerHTML = TriangleHeaderDynamicInString;
+    
+      document.getElementById("TriangleRunDynamicIn").addEventListener
+      (
+        "click",
+        function()
+        {
+          const Result = IOE_RunApplication(TriangleApp, IOE);
+          document.getElementById("TriangleOutputDynamicIn").innerHTML = Result;
+        }
+      );
+  </script>
+  <br>
+  <br>
+  <hr>
+  <br>
+  <h1>Demonstration of IOE Capacities and Use Cases Through 'NetShell'</h1>
+  <br>
+  So far, this document has demonstrated the fundamental mechanisms of IOE:<br>
+  <ul>
+  <li>applications can describe themselves through an IOE header;</li>
+    <li>an IOE environment can determine what an application requires;</li>
+    <li>dependencies can be resolved independently of the application;</li>
+    <li>input can be provided by the environment rather than being tied to a particular user interface;</li>
+    <li>existing JavaScript code can be wrapped and exposed as an IOE application;</li>
+    <li>and the application itself does not need to know which particular interface is providing its environment.</li>
+  </ul>
+  <br><br>
+
+  These examples demonstrate that the protocol works.<br>
+  However, this raises a more important question:<br>
+  <i>What can this actually be used for?</i><br>
+  <br>
+  A protocol should not exist merely because it can be implemented. If IOE is to become useful, it should make possible forms of interaction with Internet resources that are difficult, inconvenient, or conceptually different from ordinary web browsing.<br>
+  The next step is therefore not another isolated protocol example. It is the construction of a practical environment that demonstrates what can be done with the protocol.<br>
+  <br>
+  <h2>NetShell</h2>
+  <br>
+  For this purpose, this project introduces <strong>NetShell</strong>.<br>
+  <br>
+  NetShell is a terminal-oriented interface built on top of IOE. Its appearance and interaction model are inspired by classic DOS terminals, while its command conventions are primarily derived from modern Unix / Linux environments.<br>
+  The combination is deliberate.<br>
+  The terminal provides a familiar and extremely lightweight way of interacting with computational resources, while the underlying filesystem, application system, and execution model are provided by the NetShell environment rather than by IOE itself.<br>
+  <br>
+  The distinction is important:<br>
+
+  <pre>
+                   IOE
+                    │
+       Application interoperability
+                    │
+        ┌───────────┴───────────┐
+        │                       │
+  IOE Applications       IOE Interfaces
+                                │
+                        ┌───────┴───────┐
+                        │               │
+                     NetShell        Other
+                                    environments
+  </pre>
+
+NetShell is therefore <strong>not part of the IOE protocol</strong>.<br>
+It is one possible environment built using IOE.<br>
+<br>
+A different developer could create a graphical environment, a canvas-based environment, a remote application browser, an embedded environment, or something that does not resemble a traditional operating system at all.<br>
+This separation is one of the central properties that IOE is intended to preserve.<br>
+<br>
+<h3>Why a terminal?</h3>
+<br>
+A terminal makes the relationship between the user, the environment, IOE, and an Internet application particularly visible. It is also simpler to program and enough to showcase the capabilities of the IOE.<br>
+For example, the user may eventually be able to write:<br>
+<pre>
+$ ls
+
+HELLO.APP
+TRICALC.APP
+TRICLASS.JSM
+
+$ tricalc 3 4 1.5707963268
+</pre>
+
+The command itself is simple. What happens behind it is more interesting.<br>
+NetShell can interpret `tricalc` as an application in its virtual filesystem, locate the corresponding Internet resource, ask IOE to load the application, resolve its dependencies, provide its execution environment, and return its result to the terminal.<br>
+<br>
+Conceptually:<br>
+<pre>
+User command
+     │
+     ▼
+NetShell
+     │
+     ├── command interpretation
+     ├── virtual filesystem
+     └── application lookup
+             │
+             ▼
+            IOE
+             │
+             ├── application loading
+             ├── dependency resolution
+             ├── interface/environment
+             └── execution
+             │
+             ▼
+       IOE Application
+             │
+             ▼
+          result
+             │
+             ▼
+          NetShell
+             │
+             ▼
+           user
+</pre>
+
+This is substantially different from merely putting a JavaScript function inside a web page and calling it.<br>
+The terminal becomes an interface through which Internet-distributed software can be treated as computational resources.<br>
+<br>
+<h3>NetShell's filesystem</h3>
+<br>
+IOE itself does not require a filesystem.<br>
+A filesystem is a decision made by an environment.<br>
+My page will nevertheless provide a small hard-coded virtual filesystem for the NetShell because it gives applications and resources a familiar organization and gives users a practical way to discover and execute them.<br>
+The initial filesystem will intentionally be minimal.<br>
+<br>
+For example, an entry may be represented conceptually as:<br>
+<pre>
+{
+  name: 'TRICALC.APP',
+  path: '/IOE/Examples/DynamicInputs.js',
+  type: 'application'
+}
+</pre>
+
+or:<br>
+
+<pre>
+{
+  name: 'TRICLASS.JSM',
+  path: '/JSHeaders/ysxMath/Geo/ysxTri.js',
+  type: 'module',
+  class: 'ysxTRI_Triangle'
+}
+</pre>
+
+`name` and `path` identify the resource and are fundamental to the filesystem.<br>
+Other properties, such as `type` and `class`, provide information understood by the current NetShell implementation.<br>
+The filesystem may also contain additional metadata that NetShell does not currently understand. Unknown properties should not automatically make an entry invalid. This allows the filesystem format to evolve without requiring every environment to understand every possible property.<br>
+The `.APP` and `.JSM` names are semantic names used by NetShell. They do not imply that the underlying Internet resource must physically use those extensions.<br>
+<br>
+For example:<br>
+<pre>
+TRICALC.APP
+       │
+       ▼
+/IOE/Examples/DynamicInputs.js
+</pre>
+
+and:<br>
+
+<pre>
+TRICLASS.JSM
+       │
+       ▼
+/JSHeaders/ysxMath/Geo/ysxTri.js
+</pre>
+
+The virtual filesystem therefore provides a layer of organization over the underlying Internet resources.<br>
+<br>
+<h3>NetShell commands</h3>
+<br>
+The initial command set will intentionally remain small.<br>
+<br>
+The first version can provide commands such as:<br>
+<pre>
+ls
+cd
+pwd
+clear
+help
+echo
+</pre>
+
+and application execution through the application's name:<br>
+
+<pre>
+tricalc 3 4 1.5707963268
+</pre>
+
+There is no need for an `exit` command in the initial browser-based environment. The NetShell interface exists inside a browser document, so terminating the browser page already terminates the environment.<br>
+Commands will initially be case-insensitive. This preserves some of the convenience associated with classic command-line interfaces without requiring users to remember a particular capitalization.<br>
+The visual presentation, however, will deliberately retain elements of the classic DOS terminal aesthetic.<br>
+The result is not intended to reproduce DOS. It is a modern Internet-oriented environment presented through a familiar terminal metaphor.<br>
+<br>
+<h3>Application arguments belong to the interface</h3>
+<br>
+The distinction between IOE and NetShell becomes especially important with command-line arguments.<br>
+IOE already provides an abstract input mechanism:<br>
+<pre>
+IOE.input.number('a');
+</pre>
+
+This represents an application asking its environment for a number called `a`.<br>
+NetShell can provide another mechanism for supplying input through command-line arguments.<br>
+<br>
+For example:<br>
+<pre>
+tricalc 3 4 1.5707963268
+</pre>
+
+could provide:<br>
+
+<pre>
+3
+4
+1.5707963268
+</pre>
+
+to the application.<br>
+This argument mechanism belongs to NetShell's interface rather than to the fundamental IOE protocol.<br>
+A different environment could provide the same application with its inputs through graphical controls, a dialog, a remote interface, or another mechanism.<br>
+The application therefore remains independent of the environment through which it is being operated.<br>
+<br>
+This is an important property of the architecture:<br>
+<strong>IOE applications should depend on capabilities, not on a particular user interface</strong>.<br>
+<br>
+<h3>The real purpose of NetShell</h3>
+<br>
+The purpose of NetShell is not to create a nostalgic terminal inside a web page.<br>
+The terminal is only the interface through which the underlying concept becomes visible.<br>
+The important question during its development will therefore be:<br>
+<strong>What would make someone genuinely want to use an IOE-based environment, rather than simply regard IOE as an interesting way of adding metadata to JavaScript files</strong>?<br>
+<br>
+This question should guide the development of NetShell.<br>
+<br>
+Every feature should be considered in terms of whether it demonstrates a meaningful advantage of treating Internet resources as interoperable computational resources.<br>
+<br>
+For example:<br>
+<ul>
+  <li>Can an application be discovered without the environment knowing its implementation beforehand?</li>
+  <li>Can applications be loaded from outside the environment's own project?</li>
+  <li>Can independently hosted applications use independently hosted dependencies?</li>
+  <li>Can the same application operate through different interfaces?</li>
+  <li>Can the environment organize Internet resources in a way useful to the user?</li>
+  <li>Can an application become part of a larger computational workflow without being rewritten specifically for that environment?</li>
+  <li>Can the user interact with resources from different locations as though they belonged to one coherent computational environment?</li>
+</ul>
+<br>
+These questions are more important than making NetShell increasingly elaborate.<br>
+<br>
+A complicated terminal that only launches applications stored on one website would demonstrate relatively little.<br>
+A small terminal that can meaningfully consume independently distributed applications would demonstrate considerably more.<br>
+<br>
+<h3>NetShell as a practical IOE environment</h3>
+<br>
+NetShell will therefore begin as a demonstration, but it is intended to evolve beyond the documentation.<br>
+The implementation developed from this section will eventually become a standalone project rather than remaining embedded inside this tutorial.<br>
+The documentation demonstrates the principles.<br>
+NetShell demonstrates their practical use.<br>
+<br>
+<strong>The IOE protocol remains independent of both</strong>.
+<br>
+<pre>
+                 IOE
+                  │
+       ┌──────────┴──────────┐
+       │                     │
+   Applications          Environments
+       │                     │
+       │              ┌──────┴──────┐
+       │              │             │
+       │          NetShell       future
+       │                        environments
+       │
+       ├── Hello World
+       ├── Triangle Calculator
+       └── external applications
+</pre>
+
+The final NetShell implementation will therefore not be reproduced in full inside this document.<br>
+Instead, this documentation will provide a link to the working NetShell environment.<br>
+This keeps the technical documentation focused on IOE itself while allowing NetShell to develop as a real piece of software.<br>
+The implementation can subsequently be published independently, versioned, forked, extended, and eventually distributed as a practical IOE-based tool.<br>
+<br>
+<h3>Beyond the browser</h3>
+<br>
+The current IOE implementation necessarily operates within the capabilities exposed by the browser:<br>
+<pre>
+HTML
+CSS
+JavaScript
+Browser networking
+Browser execution environment
+</pre>
+
+This is a limitation of the current implementation, not necessarily a limitation of the architectural idea.<br>
+IOE is being designed with the longer-term possibility of extending its environmental abstraction toward lower-level networking and computational environments.<br>
+Future implementations, forks, or contributions may therefore adapt the IOE model to environments that have access to capabilities unavailable to browser JavaScript, including other networking protocols and lower-level network interfaces.<br>
+The current project does not attempt to implement those capabilities.<br>
+Instead, the present implementation establishes the architectural boundary on which such future work can build.<br>
+The long-term objective is therefore not simply to create another JavaScript framework for websites.<br>
+It is to investigate how far the concept of an interoperable environment for Internet resources can be extended.<br>
+The browser is our current environment.<br>
+It does not have to be our final one.<br>
+<br>
+<h3>From proof of concept to software</h3>
+<br>
+At this point, the purpose of the documentation changes.<br>
+The previous sections establish that the IOE model can be implemented.<br>
+NetShell establishes that the model can be used to construct a practical environment around it.<br>
+Once these demonstrations are complete, further development of IOE no longer needs to occur primarily as examples in this document.<br>
+The protocol can become software.<br>
+NetShell can become software.<br>
+Applications can become software.<br>
+And independent developers can begin experimenting with the system without needing to follow this tutorial to reproduce its implementation.<br>
+<br>
+<strong>The documentation demonstrates the idea. The software puts the idea into practice</strong>.<br>
+<br>
+With all that being said, here it is the link for the 'NetShell' demonstrating the capabilities of IOE:<br>
+<a href="/NetShell/NetShell.html">NetShell App</a>.<br>
+  <br>
+  <br>
+  <hr>
+  <br>
+  <h1>THIS DOC IS A W.I.P!!! STAY TUNED! MORE TO COME!</h1>
+  </body>
+</html>

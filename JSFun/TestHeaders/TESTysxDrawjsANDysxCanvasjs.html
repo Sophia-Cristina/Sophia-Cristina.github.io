@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test ysxDraw.js and ysxCanvas.js</title>
+    <style></style>
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+  <h1>TEST 'JSHeaders/ysxGraph/ysxColor.js' AND 'JSHeaders/ysxGraph/Canvas/Plotter/*.js'</h1>
+  <p>
+  'ysxDraw.js' is my header for basic tools and functions related to drawing on a Canvas, but it is not a full plotter algorithm.<br>
+  I'm going to update this page whenever i update these headers.<br><br>
+  Already working plotters that are useful tools will be on their respective pages, however, i may link these from here.<br><br>
+    
+  </p>
+  <h2 id="canvas_h2">The size of the canvas below is: 800x600.</h2>
+  Change size:<br>
+  <label> x: <input type="number" id="canvas_x" value="800"> </label>
+  <label> y: <input type="number" id="canvas_y" value="600"> </label>
+  <br><br>
+  <h1><b>~*~ ~*~ ~*~ ~*~ ~*~ ~*~ ~*~</b></h1>
+  <br>
+  
+    <h1>####### ysxDraw.js #######</h1>
+    
+    <h2>Line Ray:</h2>
+    <label> x: <input type="number" id="ray_x" value="400"> </label>
+    <label> y: <input type="number" id="ray_y" value="300"> </label>
+    <label> Radius: <input type="number" id="ray_r" value="200"> </label>
+    <label> Radians: <input type="number" id="ray_rad" value="0"> </label>
+    <label> Triangle: <input type="checkbox" id="ray_triangle"> </label>
+    <button id="ray_draw">ysxDRAW_LineRay()</button>
+    <hr>
+
+    <h2>Bresenham Line:</h2>
+    <label> x0: <input type="number" id="bres_x0" value="70"> </label>
+    <label> y0: <input type="number" id="bres_y0" value="70"> </label>
+    <label> x1: <input type="number" id="bres_x1" value="560"> </label>
+    <label> y1: <input type="number" id="bres_y1" value="560"> </label>
+    <button id="bres_draw">ysxDRAW_Line()</button>
+    <hr>
+    <br>
+    <br>
+    
+    <h1>####### ysxGeoPlot.js #######</h1>
+    
+    <h2>Circle at 'x' and 'y':</h2>
+    <label> x: <input type="number" id="circle_x" value="400"> </label>
+    <label> y: <input type="number" id="circle_y" value="300"> </label>
+    <label> Radius: <input type="number" id="circle_r" value="77"> </label>
+    <button id="circle_draw">ysxDRAW_Circle()</button>
+    <hr>
+
+    <h2>Circle of the 'Canvas' size</h2>
+    <label> Hue: <input type="number" id="circledge_hue" value="0.777"> </label>
+    <label> Brightness: <input type="number" id="circledge_bright" value="1"> </label>
+    <label> Contrast: <input type="number" id="circledge_cont" value="0.5"> </label>
+    <button id="circledge_draw">ysxDRAW_CircleEdge()</button>
+    <hr>
+    
+    <h2>Arc:</h2>
+    <label> r: <input type="number" id="arc_r" value="140"> </label>
+    <label> x: <input type="number" id="arc_x" value="399"> </label>
+    <label> y: <input type="number" id="arc_y" value="299"> </label>
+    <label> Initial turn: <input type="number" id="arc_ini" value="0.33"> </label>
+    <label> Turns: <input type="number" id="arc_turns" value="0.777"> </label>
+    <button id="arc_draw">ysxDRAW_Arc()</button>
+    <hr>
+    
+    <h2><a href="https://en.wikipedia.org/wiki/Hypocycloid">Hypocycloid</a>, <a href="https://en.wikipedia.org/wiki/Hypotrochoid">hypotrochoid</a>:</h2>
+    * Hypocycloid happens when 'd = r'.<br>
+    <label> R: <input type="number" id="hypocy_R" value="112"> </label>
+    <label> r: <input type="number" id="hypocy_r" value="8"> </label>
+    <label> d: <input type="number" id="hypocy_d" value="8"> </label>
+    <label> x: <input type="number" id="hypocy_x" value="399"> </label>
+    <label> y: <input type="number" id="hypocy_y" value="299"> </label>
+    <label> t0: <input type="number" id="hypocy_t0" value="0"> </label>
+    <label> t1: <input type="number" id="hypocy_t1" value="6.2831"> </label>
+    <button id="hypocy_draw">ysxDRAW_HypoCycl()</button>
+    <hr>
+    
+    <h2><a href="https://en.wikipedia.org/wiki/Epicycloid">Epicycloid</a>, <a href="https://en.wikipedia.org/wiki/Epitrochoid">epitrochoid</a>:</h2>
+    <label> R: <input type="number" id="epicy_R" value="77"> </label>
+    <label> r: <input type="number" id="epicy_r" value="11"> </label>
+    <label> d: <input type="number" id="epicy_d" value="11"> </label>
+    <label> x: <input type="number" id="epicy_x" value="399"> </label>
+    <label> y: <input type="number" id="epicy_y" value="299"> </label>
+    <label> t0: <input type="number" id="epicy_t0" value="0"> </label>
+    <label> t1: <input type="number" id="epicy_t1" value="6.2831"> </label>
+    <button id="epicy_draw">ysxDRAW_EpiCycl()</button>
+    <hr>
+    
+    <!-- <h2><a href="https://en.wikipedia.org/wiki/Epitrochoid">Epitrochoid</a>:</h2>
+    <label> R: <input type="number" id="epitro_R" value="100"> </label>
+    <label> r: <input type="number" id="epitro_r" value="100"> </label>
+    <label> x: <input type="number" id="epitro_x" value="700"> </label>
+    <label> y: <input type="number" id="epitro_y" value="500"> </label>
+    <label> t0: <input type="number" id="epitro_t0" value="700"> </label>
+    <label> t1: <input type="number" id="epitro_t1" value="500"> </label>
+    <button id="epitro_draw">ysxDRAW_EpiCycl()</button>
+    <hr> -->
+    
+    <h2>Polygon:</h2>
+    <label> Sides: <input type="number" id="polyg_sides" value="7"> </label>
+    <label> r: <input type="number" id="polyg_r" value="280"> </label>
+    <label> x: <input type="number" id="polyg_x" value="399"> </label>
+    <label> y: <input type="number" id="polyg_y" value="299"> </label>
+    <label> Vertex: <input type="checkbox" id="polyg_vert"> </label>
+    <button id="polyg_draw">ysxDRAW_Polygon()</button>
+    <hr>
+    
+    <h2>Triangle:</h2>
+    // 'ysxTRI_Triangle', which is used by 'ysxDRAW_Tri' plotter, can be tested here:<br>
+    <a href="/JSUtils/Plotters/Triangle">TRIANGLE PLOTTER</a>. // It have its own special page, because it is also a calculator and part of 'JSUtils' that i'm making<br>
+    <hr>
+    <br>
+    <br>
+
+
+    ~*~--------------------------------------------------------------------------------------------------------------------------------------------~*~<br>
+     #<canvas id="canvas" width="800" height="600"></canvas>#<br>
+    ~*~--------------------------------------------------------------------------------------------------------------------------------------------~*~
+    <br><br>
+    <hr>
+
+    
+    <h2>CLEAR CANVAS:</h2>
+    <button id="clear">Clear Canvas</button>
+
+    <script type="module" src="./TESTysxDrawjsANDysxCanvasjs.js"></script>
+    <br><br><br><br><br><br><br>
+  </body>
+</html>
